@@ -6,6 +6,7 @@ import torch
 
 from .evaluation_metrics import accuracy, prec_rec, f1
 from .utils.meters import AverageMeter
+from datachallenge.utils import to_torch
 
 def get_logits_batch(model, inputs , device = torch.device('cpu'), modules=None):
     model.eval()
@@ -76,7 +77,7 @@ class Evaluator(object):
         self.model = model
         self.device = device
 
-    def evaluate(self, data_loader, query, gallery):
+    def evaluate(self, data_loader):
         logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         acc_ , prec_, rec_, f1_ = evaluate_all(logits, targets)
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_)

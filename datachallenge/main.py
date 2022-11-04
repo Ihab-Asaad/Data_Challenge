@@ -145,9 +145,9 @@ def main(args):
     if args["training_configs"]["evaluate"]:
         metric.train(model, train_loader)
         print("Validation:")
-        evaluator.evaluate(val_loader, dataset.val, dataset.val, metric)
+        evaluator.evaluate(val_loader)
         print("Test:")
-        evaluator.evaluate(test_loader, dataset.query, dataset.gallery, metric)
+        evaluator.evaluate(test_loader)
         return
 
     # Criterion
@@ -200,7 +200,7 @@ def main(args):
         trainer.train(epoch, train_loader, optimizer)
         if epoch < args["training_configs"]["start_save"]:
             continue
-        top1 = evaluator.evaluate(val_loader, dataset.val, dataset.val)
+        top1 = evaluator.evaluate(val_loader)
 
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
@@ -220,7 +220,7 @@ def main(args):
     # model.module.load_state_dict(checkpoint['state_dict'])
     model.load_state_dict(checkpoint['state_dict'])
     metric.train(model, train_loader)
-    evaluator.evaluate(test_loader, dataset.query, dataset.gallery, metric)
+    evaluator.evaluate(test_loader)
 
 
 if __name__ == '__main__':
