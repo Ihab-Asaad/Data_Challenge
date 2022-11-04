@@ -7,4 +7,5 @@ datachallenge/datasets/__pycache__
 datachallenge/utils/__pycache__
 datachallenge/utils/data/__pycache__
 datachallenge/__pycache__
+datachallenge/models/__pycache__
 *.zip
