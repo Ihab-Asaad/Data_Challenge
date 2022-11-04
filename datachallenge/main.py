@@ -148,9 +148,11 @@ def main(args):
         evaluator.evaluate(val_loader)
         print("Test:")
         evaluator.evaluate(test_loader)
-    return
     # Criterion
-    criterion = nn.CrossEntropyLoss().cuda() 
+    repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
+    torch_repeat = torch.Tensor(repeat)
+    class_weights = sum(torch_repeat)/torch_repeat
+    criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
     # criterion =  TripletLoss(0.5).cuda()
 
     # Optimizer

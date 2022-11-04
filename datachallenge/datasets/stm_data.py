@@ -12,7 +12,7 @@ from datachallenge.utils.osutils import mkdir_if_missing
 from datachallenge.utils.serialization import write_json, read_json
 
 from sklearn.model_selection import train_test_split
-
+from collections import Counter
 
 # class STM_DATA(Dataset):
 class STM_DATA():
@@ -94,6 +94,8 @@ class STM_DATA():
         self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
+        self.weights_trainval = Counter(y_train_val).values()
+        self.weights_train = Counter(y_train).values()
         # print(len(X_train),len(y_train),len(X_val), len(y_val),len(X_test), len(y_test))
 
 if __name__ == "__main__":
