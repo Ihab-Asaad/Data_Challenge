@@ -34,7 +34,7 @@ from datachallenge.evaluators import Evaluator
 from datachallenge.utils.data import transformers as T
 from datachallenge.utils.data.preprocessor import Preprocessor
 from datachallenge.utils.logging import Logger  
-# from reid.utils.serialization import load_checkpoint, save_checkpoint
+from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 
 # 
 # from reid.loss import TripletLoss
@@ -127,6 +127,7 @@ def main(args):
     # Load from checkpoint
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
+        print("Load from saved model...")
         checkpoint = load_checkpoint(args["training_configs"]["resume"])
         model.load_state_dict(checkpoint['state_dict'])
         start_epoch = checkpoint['epoch']
@@ -147,7 +148,7 @@ def main(args):
         evaluator.evaluate(val_loader)
         print("Test:")
         evaluator.evaluate(test_loader)
-
+    return
     # Criterion
     criterion = nn.CrossEntropyLoss().cuda() 
     # criterion =  TripletLoss(0.5).cuda()
@@ -198,8 +199,8 @@ def main(args):
         trainer.train(epoch, train_loader, optimizer)
         if epoch < args["training_configs"]["start_save"]:
             continue
-        top1 = evaluator.evaluate(val_loader)
-
+        metrics_ = evaluator.evaluate(val_loader)
+        top1 = metrics_[0] # accuracy
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
         save_checkpoint({
@@ -217,7 +218,7 @@ def main(args):
     checkpoint = load_checkpoint(osp.join(args["logging"]["logs_dir"], 'model_best.pth.tar'))
     # model.module.load_state_dict(checkpoint['state_dict'])
     model.load_state_dict(checkpoint['state_dict'])
-    metric.train(model, train_loader)
+    # metric.train(model, train_loader)
     evaluator.evaluate(test_loader)
 
 
