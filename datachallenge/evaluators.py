@@ -21,22 +21,25 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
     model.eval()
     batch_time = AverageMeter()
     end = time.time()
-    targets , logits = [],[]
+    targets , logits = [], []
     for i, (imgs, classes) in enumerate(data_loader):
         batch_time.update(time.time() - end) # the time of getting new batch
         outputs = get_logits_batch(model, imgs, device)
-        targets.extend(classes)
-        logits.extend(outputs)
+        targets.append(classes)
+        logits.append(outputs)
+        print(len(targets), len(logits))
         if (i + 1) % print_freq == 0:
             print('Get outputs: [{}/{}]\t'
                   'Time {:.3f} ({:.3f})\t'
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
-    return np.array(logits), np.array(targets)
+        targets_ = torch.cat([x.float() for x in targets], dim=0)
+        logits_ = torch.cat([x.float() for x in logits], dim=0)
+    return logits_, targets_
 
 def evaluate_all(logits, targets):
     acc_ = accuracy(logits, targets)
-    prec_, rec_ = precision_recall(logits, targets)
+    prec_, rec_ = prec_rec(logits, targets)
     f1_ = f1(logits, targets)
     return acc_, prec_, rec_, f1_
     # Compute mean AP

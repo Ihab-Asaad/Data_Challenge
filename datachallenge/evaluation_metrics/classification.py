@@ -9,6 +9,7 @@ from torchmetrics.classification import MulticlassAccuracy
 
 def accuracy(output, target, topk=(1,)):
     Acc = MulticlassAccuracy(num_classes = 8)
+    print(output.shape, target.shape)
     return Acc(output.detach().cpu(), target.detach().cpu())
     # output, target = to_torch(output), to_torch(target)
     # maxk = max(topk)
