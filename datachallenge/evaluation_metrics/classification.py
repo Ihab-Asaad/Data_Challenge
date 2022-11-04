@@ -23,7 +23,7 @@ def accuracy(output, target, topk=(1,)):
     #     ret.append(correct_k.mul_(1. / batch_size))
     # return ret
 
-def precision_recall(output, target):
+def prec_rec(output, target):
     # prec_, rec_ = precision_recall(preds, target, average='macro', num_classes=8)
     prec_, rec_ = precision_recall(preds, target, average='macro', num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/precision_recall.html
     return prec_, rec_

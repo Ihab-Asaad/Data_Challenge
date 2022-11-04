@@ -29,7 +29,7 @@ import gc
 from datachallenge import datasets
 from datachallenge import models
 # from datachallenge.dist_metric import DistanceMetric
-# from reid.trainers import Trainer
+from datachallenge.trainers import Trainer
 from datachallenge.evaluators import Evaluator
 from datachallenge.utils.data import transformers as T
 from datachallenge.utils.data.preprocessor import Preprocessor
@@ -142,7 +142,6 @@ def main(args):
     # Evaluator
     evaluator = Evaluator(model, device)
 
-    return
     if args["training_configs"]["evaluate"]:
         metric.train(model, train_loader)
         print("Validation:")
