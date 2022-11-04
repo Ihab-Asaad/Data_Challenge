@@ -150,6 +150,7 @@ def main(args):
         evaluator.evaluate(test_loader)
     # Criterion
     repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
+    print(repeat)
     torch_repeat = torch.Tensor(repeat)
     class_weights = sum(torch_repeat)/torch_repeat
     criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 

@@ -94,8 +94,8 @@ class STM_DATA():
         self.y_val = y_val
         self.X_test = X_test
         self.y_test = y_test
-        self.weights_trainval = Counter(y_train_val).values()
-        self.weights_train = Counter(y_train).values()
+        self.weights_trainval = list(Counter(y_train_val).values())
+        self.weights_train = list(Counter(y_train).values())
         # print(len(X_train),len(y_train),len(X_val), len(y_val),len(X_test), len(y_test))
 
 if __name__ == "__main__":
