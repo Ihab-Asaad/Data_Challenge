@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import
 import time
 from collections import OrderedDict
-
+import numpy as np
 import torch
 
 from .evaluation_metrics import accuracy, prec_rec, f1
@@ -10,7 +10,8 @@ from datachallenge.utils import to_torch
 
 def get_logits_batch(model, inputs , device = torch.device('cpu'), modules=None):
     model.eval()
-    inputs = to_torch(inputs).to(device)
+    inputs = inputs.to(device)
+    # inputs = to_torch(inputs).to(device)
     if modules is None:
         with torch.no_grad(): ## ??
             outputs = model(inputs).cpu()
@@ -31,10 +32,9 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
                   'Time {:.3f} ({:.3f})\t'
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
-    return logits, targets
+    return np.array(logits), np.array(targets)
 
 def evaluate_all(logits, targets):
-
     acc_ = accuracy(logits, targets)
     prec_, rec_ = precision_recall(logits, targets)
     f1_ = f1(logits, targets)

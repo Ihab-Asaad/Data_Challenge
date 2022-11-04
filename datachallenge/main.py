@@ -80,6 +80,7 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
                      transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
+    print(len(val_set[0]))
 
     test_loader = DataLoader(
         Preprocessor(test_set, root=dataset.images_dir, transform=test_transformer),
@@ -141,7 +142,7 @@ def main(args):
     evaluator = Evaluator(model, device)
 
     if args["training_configs"]["evaluate"]:
-        metric.train(model, train_loader)
+        # metric.train(model, train_loader)
         print("Validation:")
         evaluator.evaluate(val_loader)
         print("Test:")

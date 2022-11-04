@@ -21,7 +21,7 @@ training:
     workers : 2 # the number of processes that generate batches in parallel
     features: 128 # number of features after base model
     dropout: 0.5
-    lr: 0.1 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this"
+    lr: 0.1 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
     momentum: 0.9
     weight_decay: 0.0005
     opt: adam # not added yet
@@ -33,7 +33,7 @@ training:
 training_configs:
     combine_trainval: True # if True train and val sets together for training, and val set alone for validataion.
     resume : '' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
-    evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
+    evaluate : True # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
     start_save: 0 # start saving checkpoints after specific epoch
     seed: 1
     print_freq: 1 # print to stdout each print_freq epochs
