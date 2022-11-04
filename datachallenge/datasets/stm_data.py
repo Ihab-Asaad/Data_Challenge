@@ -1,4 +1,5 @@
 from __future__ import print_function, absolute_import
+import os
 import os.path as osp
 import requests
 import zipfile
@@ -8,7 +9,9 @@ print(__name__)
 # from ..utils.data import Dataset
 # from ..utils.data.dataset import download_extract
 from datachallenge.utils.osutils import mkdir_if_missing
-# from ..utils.serialization import write_json
+from datachallenge.utils.serialization import write_json, read_json
+
+from sklearn.model_selection import train_test_split
 
 
 # class STM_DATA(Dataset):
@@ -17,6 +20,8 @@ class STM_DATA():
         if google_id == None:
             google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU"
         self.id = google_id
+        self.val_split = val_split
+        self.test_split = test_split
         self.extract_to = extract_to
         if download_to == None:
             download_to = extract_to
@@ -25,12 +30,11 @@ class STM_DATA():
         if download:
             self.download()
 
+        self.scan()
+        self.split()
         if not self._check_integrity():
             raise RuntimeError("Dataset not found or corrupted. " +
                                "You can use download=True to download it.")
-
-        self.scan()
-        self.split()
 
     def _check_integrity(self): # name 'images' as it is in your zip: 'train'
         return osp.isdir(osp.join(self.extract_to, 'train')) and \
@@ -38,12 +42,10 @@ class STM_DATA():
                osp.isfile(osp.join(self.extract_to, 'splits.json'))
 
     def download(self):
-        # if osp.isfile('./stm_data.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
-        #     print("File already downloaded...")
-        #     return
-        # file = gdown.download(id=self.id, output=self.download_to, quiet=False)
-        print(self.id)
-        file = gdown.download(id="1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU", output='./stm_data.zip', quiet=False)
+        if osp.isfile('./stm_data.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
+            print("File already downloaded...")
+            return
+        file = gdown.download(id=self.id, output='./stm_data.zip', quiet=False)
         # print(self.download_to)
         # gdd.download_file_from_google_drive(file_id=self.id,
                                     # dest_path=osp.join('./stm_data.zip'),
@@ -52,22 +54,47 @@ class STM_DATA():
         with zipfile.ZipFile('./stm_data.zip', 'r') as zip_ref:
             zip_ref.extractall(self.extract_to)
     def scan(self):
-        path_to_images = osp.isdir(osp.join(self.extract_to, 'train'))
-        list_dirs = os.list_dirs(path_to_images)
-        print(list_dirs)
-    def split(self):
-        return
-        # # Save meta information into a json file
-        # meta = {'name': 'Market1501', 'shot': 'multiple', 'num_cameras': 6,
-        #         'identities': identities}
-        # write_json(meta, osp.join(self.root, 'meta.json'))
+        path_to_images = osp.join(self.extract_to, 'train')
+        self.images_dir = path_to_images
+        list_dirs = sorted(os.listdir(path_to_images)) # this should contains the classes sorted:
+        self.num_classes = len(list_dirs)
+        class_paths = [[] for _ in range(len(list_dirs))]
+        size = 0
+        X,y = [],[]
+        for i, class_path in enumerate(list_dirs):
+            class_i = i
+            img_paths = osp.join(path_to_images, class_path)
+            size +=len(os.listdir(img_paths))
+            for img_path in os.listdir(img_paths):
+                img_full_path = osp.join(img_paths, img_path)
+                class_paths[i].append(img_full_path)
+            X.extend(class_paths[i])
+            y.extend([i]*len(class_paths[i]))
+        self.X = X
+        self.y = y
+        self.size = size
+        meta = {'name': 'STM_Dataset', 'num_classes': self.num_classes,
+                'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
+        write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
-        # # Save the only training / test split
-        # splits = [{
-        #     'trainval': sorted(list(trainval_pids)),
-        #     'query': sorted(list(query_pids)),
-        #     'gallery': sorted(list(gallery_pids))}]
-        # write_json(splits, osp.join(self.root, 'splits.json'))
+    def split(self):
+        X,y = self.X, self.y
+        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=42)
+        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
+        # # Save meta information into a json file
+        splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
+                'X_test': X_test,'y_test': y_test}
+        write_json(splits, osp.join(self.extract_to, 'splits.json'))
+
+        self.X_trainval= X_train_val
+        self.y_trainval = y_train_val
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_val = X_val
+        self.y_val = y_val
+        self.X_test = X_test
+        self.y_test = y_test
+        # print(len(X_train),len(y_train),len(X_val), len(y_val),len(X_test), len(y_test))
 
 if __name__ == "__main__":
     print("stm_data")

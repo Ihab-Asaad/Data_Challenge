@@ -31,7 +31,7 @@ from datachallenge import datasets
 # from reid.dist_metric import DistanceMetric
 # from reid.trainers import Trainer
 # from reid.evaluators import Evaluator
-# from reid.utils.data import transforms as T
+from datachallenge.utils.data import transforms as T
 # from reid.utils.data.preprocessor import Preprocessor
 from utils.logging import Logger  
 # from reid.utils.serialization import load_checkpoint, save_checkpoint
@@ -44,14 +44,14 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     extract_to = osp.join(data_dir, name)
     
     dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
-    return 1,1,1,1,1
+
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
-    train_set = dataset.trainval if combine_trainval else dataset.train
-    num_classes = (dataset.num_trainval_ids if combine_trainval
-                   else dataset.num_train_ids)
+    train_set = (dataset.X_trainval, dataset.y_train_val) if combine_trainval else (dataset.X_train, dataset.y_train)
+    num_classes = dataset.num_classes
 
+    return 1,1,1,1,1
     train_transformer = T.Compose([
         T.RandomSizedRectCrop(height, width),
         T.RandomHorizontalFlip(),
