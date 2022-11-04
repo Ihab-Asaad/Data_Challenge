@@ -5,6 +5,6 @@ build/
 datachallenge/datasets/dataset/
 datachallenge/datasets/__pycache__
 datachallenge/utils/__pycache__
-atachallenge/utils/__pycache__
+datachallenge/utils/data/__pycache__
 datachallenge/__pycache__
 *.zip
