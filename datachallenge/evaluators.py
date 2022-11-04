@@ -27,14 +27,13 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
         outputs = get_logits_batch(model, imgs, device)
         targets.append(classes)
         logits.append(outputs)
-        print(len(targets), len(logits))
         if (i + 1) % print_freq == 0:
             print('Get outputs: [{}/{}]\t'
                   'Time {:.3f} ({:.3f})\t'
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
-        targets_ = torch.cat([x.float() for x in targets], dim=0)
-        logits_ = torch.cat([x.float() for x in logits], dim=0)
+        targets_ = torch.cat([x for x in targets], dim=0)
+        logits_ = torch.cat([x for x in logits], dim=0)
     return logits_, targets_
 
 def evaluate_all(logits, targets):

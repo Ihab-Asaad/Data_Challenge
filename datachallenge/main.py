@@ -147,7 +147,6 @@ def main(args):
         evaluator.evaluate(val_loader)
         print("Test:")
         evaluator.evaluate(test_loader)
-        return
 
     # Criterion
     criterion = nn.CrossEntropyLoss().cuda() 

@@ -9,7 +9,6 @@ from torchmetrics.classification import MulticlassAccuracy
 
 def accuracy(output, target, topk=(1,)):
     Acc = MulticlassAccuracy(num_classes = 8)
-    print(output.shape, target.shape)
     return Acc(output.detach().cpu(), target.detach().cpu())
     # output, target = to_torch(output), to_torch(target)
     # maxk = max(topk)
@@ -27,7 +26,7 @@ def accuracy(output, target, topk=(1,)):
 
 def prec_rec(output, target):
     # prec_, rec_ = precision_recall(preds, target, average='macro', num_classes=8)
-    prec_, rec_ = precision_recall(preds, target, average='macro', num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/precision_recall.html
+    prec_, rec_ = precision_recall(output, target, average='macro', num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/precision_recall.html
     return prec_, rec_
 
 def f1(output, target):
