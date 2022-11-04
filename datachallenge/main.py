@@ -27,13 +27,13 @@ from torch.utils.data import DataLoader
 import gc
 
 from datachallenge import datasets
-# from reid import models
+from datachallenge import models
 # from reid.dist_metric import DistanceMetric
 # from reid.trainers import Trainer
 # from reid.evaluators import Evaluator
-from datachallenge.utils.data import transforms as T
-# from reid.utils.data.preprocessor import Preprocessor
-from utils.logging import Logger  
+from datachallenge.utils.data import transformers as T
+from datachallenge.utils.data.preprocessor import Preprocessor
+from datachallenge.utils.logging import Logger  
 # from reid.utils.serialization import load_checkpoint, save_checkpoint
 
 # 
@@ -48,10 +48,11 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
-    train_set = (dataset.X_trainval, dataset.y_train_val) if combine_trainval else (dataset.X_train, dataset.y_train)
+    train_set = (dataset.X_trainval, dataset.y_trainval) if combine_trainval else (dataset.X_train, dataset.y_train)
+    val_set = (dataset.X_val, dataset.y_val)
+    test_set = (dataset.X_test, dataset.y_test)
     num_classes = dataset.num_classes
 
-    return 1,1,1,1,1
     train_transformer = T.Compose([
         T.RandomSizedRectCrop(height, width),
         T.RandomHorizontalFlip(),
@@ -75,14 +76,13 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
         drop_last=True) 
 
     val_loader = DataLoader(
-        Preprocessor(dataset.val, root=dataset.images_dir,
+        Preprocessor(val_set, root=dataset.images_dir,
                      transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
 
     test_loader = DataLoader(
-        Preprocessor(list(set(dataset.query) | set(dataset.gallery)),
-                     root=dataset.images_dir, transform=test_transformer),
+        Preprocessor(test_set, root=dataset.images_dir, transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
 
@@ -120,11 +120,11 @@ def main(args):
         args["training_configs"]["test_split"], args["logging"]["data_dir"], height, width, \
         args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
-    return
+    
     # Create model
     model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                           dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
-
+    return
     # Load from checkpoint
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
