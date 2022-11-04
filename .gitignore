@@ -8,5 +8,3 @@ datachallenge/datasets/__pycache__
 datachallenge/utils/__pycache__
 datachallenge/__pycache__
 *.zip
-./
-./.git
