@@ -1,0 +1,12 @@
+datasets/dataset/datachallenge.zip
+datasets/dataset/train/
+dist/
+Data_Challenge.egg-info/
+build/
+datasets/dataset
+datachallenge/datasets/__pycache__
+datachallenge/utils/__pycache__
+datachallenge/__pycache__
+*.zip
+./
+./.git

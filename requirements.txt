@@ -1,0 +1,7 @@
+gdown
+six
+h5py
+Pillow
+pyyaml
+metric-learn
+gpustat

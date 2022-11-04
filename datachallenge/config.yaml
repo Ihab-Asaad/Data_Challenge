@@ -1,0 +1,51 @@
+# logger options
+description: "Softmax loss classification"
+# dataset options
+dataset:
+    name : 'stm_data' # 'ex1_data','ex2_data',...
+    extract_to: ''
+
+net: 
+    arch : 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
+    # 'inception': from scratch, not added yet
+    # 'efficientnet', 'efficientnet_b0','efficientnet_b1','efficientnet_b2','efficientnet_b3','efficientnet_b4','efficientnet_b5','efficientnet_b6','efficientnet_b7'
+    # 'cusnet'
+    # Check the data images sizes ??? important
+    height : 256 # 144 for inception
+    width : 128 # 56 for inception
+
+# training
+training:
+    epochs : 1
+    batch_size: 64 #  64( for one gpu), and 256 is used with 4 gpus
+    workers : 2 # the number of processes that generate batches in parallel
+    features: 128 # number of features after base model
+    dropout: 0.5
+    lr: 0.1 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this"
+    momentum: 0.9
+    weight_decay: 0.0005
+    opt: adam # not added yet
+    loss: softmax_loss # not added yet
+    metrics : ['acc'] # not added yet
+    num_instances: 4 # each minibatch consist of "(batch_size // num_instances) identities, and "each identity has num_instances instances"
+    margin: 0.5 # for triplet loss
+
+training_configs:
+    combine_trainval: True # if True train and val sets together for training, and val set alone for validataion.
+    resume : '' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
+    evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
+    start_save: 0 # start saving checkpoints after specific epoch
+    seed: 1
+    print_freq: 1 # print to stdout each print_freq epochs
+    val_split: 0.12 # val/(train_val)
+    test_split: 0.2 # test/(test+train_val)
+    split : 0 # The index of data split. Default: 0
+    dest_path: '../content/datasets/' # not used yet
+
+metric_learning:
+    dist_metric: 'euclidean' # ['euclidean', 'kissme']
+
+logging:
+    working_dir: '/content/Data_Challenge/datachallenge'
+    data_dir: '/content/Data_Challenge/datachallenge/datasets/dataset' # + dataset_name : where to store downloaded data
+    logs_dir: '/content/Data_Challenge/datachallenge/logs' # where to save training and testing logs
