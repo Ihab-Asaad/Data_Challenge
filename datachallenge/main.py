@@ -101,7 +101,6 @@ def seed_all(seed):
 def main(args):
     seed_all(args["training_configs"]["seed"])
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(device)
     torch.cuda.empty_cache() 
     gc.collect()
     
@@ -137,7 +136,6 @@ def main(args):
     
     # Distance metric
     # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
-    print(device)
     
     # Evaluator
     evaluator = Evaluator(model, device)

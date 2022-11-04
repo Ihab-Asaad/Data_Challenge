@@ -24,7 +24,6 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
     for i, (imgs, classes) in enumerate(data_loader):
         batch_time.update(time.time() - end) # the time of getting new batch
         outputs = get_logits_batch(model, imgs, device)
-        print(type(classes), type(outputs))
         targets.extend(classes)
         logits.extend(outputs)
         if (i + 1) % print_freq == 0:
