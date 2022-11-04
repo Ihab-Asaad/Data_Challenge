@@ -5,90 +5,37 @@ from collections import OrderedDict
 import torch
 
 from .evaluation_metrics import accuracy, precision, recall, f1
-# from .feature_extraction import extract_cnn_feature
 from .utils.meters import AverageMeter
 
+def get_logits_batch(model, inputs , device = torch.device('cpu'), modules=None):
+    model.eval()
+    inputs = to_torch(inputs).to(device)
+    if modules is None:
+        with torch.no_grad(): ## ??
+            outputs = model(inputs).cpu()
+            return outputs
 
-def extract_features(model, data_loader, print_freq=1, metric=None, device = torch.device('cpu')):
+def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu')):
     model.eval()
     batch_time = AverageMeter()
-    data_time = AverageMeter()
-
-    features = OrderedDict()
-    labels = OrderedDict()
-
     end = time.time()
-    for i, (imgs, fnames, pids, _) in enumerate(data_loader):
-        data_time.update(time.time() - end) # the time of getting new batch
-
-        outputs = extract_cnn_feature(model, imgs, device)
-        for fname, output, pid in zip(fnames, outputs, pids):
-            features[fname] = output
-            labels[fname] = pid
-
-        batch_time.update(time.time() - end) # the time required to extract features of each batch
-        end = time.time()
-
+    targets , logits = [],[]
+    for i, (imgs, classes) in enumerate(data_loader):
+        batch_time.update(time.time() - end) # the time of getting new batch
+        outputs = get_logits_batch(model, imgs, device)
+        print(type(classes), type(outputs))
+        targets.extend(classes)
+        logits.extend(outputs)
         if (i + 1) % print_freq == 0:
-            print('Extract Features: [{}/{}]\t'
+            print('Get outputs: [{}/{}]\t'
                   'Time {:.3f} ({:.3f})\t'
-                  'Data {:.3f} ({:.3f})\t'
-                  .format(i + 1, len(data_loader),
-                          batch_time.val, batch_time.avg,
-                          data_time.val, data_time.avg))
+                  .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
+        end = time.time()
+    return logits, targets
 
-    return features, labels
+def evaluate_all(logits, targets):
 
-
-def pairwise_distance(features, query=None, gallery=None, metric=None):
-    """
-    This function calculates pairwise distance between features of two images, first image from query set, second from gallery.
-    These features will be transformed first using distance metric (M = L.T@L, each feature vector x--> Lx), using prefitted metric.
-    The distance formula between two transformed vectors: x**2 + y**2 -2*x*y = (x-y)**2 is calculated.
-    Args:
-        features (list): list of features of input images 'inputs'.
-        query(Dataset) : if evaluating training process, query is validation dataset, otherwise query set.
-        gallery(Dataset): if evaluation training process, gallery is validation dataset, otherwise gallery set.
-    Return:
-        distance matrix between each pairs (imgq,imgg) where imgq from query dataset, and imgg from gallery dataset.
-    """
-    if query is None and gallery is None:
-        n = len(features)
-        x = torch.cat(list(features.values()))
-        x = x.view(n, -1)
-        if metric is not None:
-            x = metric.transform(x)
-        dist = torch.pow(x, 2).sum(dim=1, keepdim=True) * 2
-        dist = dist.expand(n, n) - 2 * torch.mm(x, x.t())
-        return dist
-
-    x = torch.cat([features[f].unsqueeze(0) for f, _, _ in query], 0)
-    y = torch.cat([features[f].unsqueeze(0) for f, _, _ in gallery], 0)
-    m, n = x.size(0), y.size(0)
-    x = x.view(m, -1)
-    y = y.view(n, -1)
-    if metric is not None:
-        x = metric.transform(x)
-        y = metric.transform(y)
-    dist = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(m, n) + \
-           torch.pow(y, 2).sum(dim=1, keepdim=True).expand(n, m).t()
-    dist.addmm_(1, -2, x, y.t())#  # in place operation: (alpha, beta, x, y) : alpha*input +beta*x*y, this order of parameter is depricated.
-    return dist
-
-
-def evaluate_all(distmat, query=None, gallery=None,
-                 query_ids=None, gallery_ids=None,
-                 query_cams=None, gallery_cams=None,
-                 cmc_topk=(1, 5, 10)):
-    if query is not None and gallery is not None:
-        query_ids = [pid for _, pid, _ in query]
-        gallery_ids = [pid for _, pid, _ in gallery]
-        query_cams = [cam for _, _, cam in query]
-        gallery_cams = [cam for _, _, cam in gallery]
-    else:
-        assert (query_ids is not None and gallery_ids is not None
-                and query_cams is not None and gallery_cams is not None)
-
+    acc = accuracy(logits, targets)
     # Compute mean AP
     mAP = mean_ap(distmat, query_ids, gallery_ids, query_cams, gallery_cams)
     print('Mean AP: {:4.1%}'.format(mAP))
@@ -126,10 +73,7 @@ class Evaluator(object):
         self.model = model
         self.device = device
 
-    def evaluate(self, data_loader, query, gallery, metric=None):
-        features, _ = extract_features(self.model, data_loader, device = self.device)
-        query_num = [features[f].unsqueeze(0) for f, _, _ in query]
-        gallery_num = [features[f].unsqueeze(0) for f, _, _ in gallery]
-        print("Before evaluation:", len(gallery_num))
-        distmat = pairwise_distance(features, query, gallery, metric=metric)
-        return evaluate_all(distmat, query=query, gallery=gallery)
+    def evaluate(self, data_loader, query, gallery):
+        logits, targets = get_logits_all(self.model, data_loader, device = self.device)
+        acc_ , prec_, rec_, f1_ = evaluate_all(logits, targets)
+        return acc_ , prec_, rec_, f1_
