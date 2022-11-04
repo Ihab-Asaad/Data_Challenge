@@ -1,2 +1,7 @@
 File already downloaded...
 cuda
+True
+cuda:0 cuda:0
+torch.Size([64, 8]) torch.Size([64])
+torch.Size([64, 8])
+cuda:0 cuda:0

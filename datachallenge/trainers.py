@@ -76,10 +76,14 @@ class Trainer(BaseTrainer):
 
     def _forward(self, inputs, targets):
         # outputs = self.model(*inputs)
+        print(next(self.model.parameters()).is_cuda)
+
         outputs = self.model(inputs)
         if isinstance(self.criterion, torch.nn.CrossEntropyLoss):
             loss = self.criterion(outputs, targets) # check the loss device ??
-            prec, = accuracy(outputs.data, targets.data)
+            print(outputs.data.device, targets.data.device)
+            print(outputs.shape, targets.shape)
+            prec, = accuracy(outputs, targets)
             prec = prec[0]
         else:
             raise ValueError("Unsupported loss:", self.criterion)

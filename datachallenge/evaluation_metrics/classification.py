@@ -7,8 +7,10 @@ from torchmetrics import Accuracy
 
 
 def accuracy(output, target, topk=(1,)):
-    accuracy = Accuracy()
-    return accuracy(output, target)
+    Acc = Accuracy(num_classes = 8)
+    print(output.shape)
+    print(output.device, target.device)
+    return Acc(output, target)
     # output, target = to_torch(output), to_torch(target)
     # maxk = max(topk)
     # batch_size = target.size(0)
