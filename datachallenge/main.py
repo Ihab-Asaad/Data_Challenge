@@ -28,9 +28,9 @@ import gc
 
 from datachallenge import datasets
 from datachallenge import models
-# from reid.dist_metric import DistanceMetric
+# from datachallenge.dist_metric import DistanceMetric
 # from reid.trainers import Trainer
-# from reid.evaluators import Evaluator
+from reid.evaluators import Evaluator
 from datachallenge.utils.data import transformers as T
 from datachallenge.utils.data.preprocessor import Preprocessor
 from datachallenge.utils.logging import Logger  
@@ -124,7 +124,6 @@ def main(args):
     # Create model
     model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                           dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
-    return
     # Load from checkpoint
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
@@ -135,12 +134,15 @@ def main(args):
         print("=> Start epoch {}  best top1 {:.1%}"
               .format(start_epoch, best_top1))
     # model = nn.DataParallel(model).cuda() # this add attribute 'module' to model
-
+    
     # Distance metric
-    metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
-
+    # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
+    print(device)
+    
     # Evaluator
     evaluator = Evaluator(model, device)
+
+    return
     if args["training_configs"]["evaluate"]:
         metric.train(model, train_loader)
         print("Validation:")
