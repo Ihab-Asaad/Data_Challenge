@@ -124,6 +124,7 @@ def main(args):
     # Create model
     model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                           dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
+    print(model)
     # Load from checkpoint
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:

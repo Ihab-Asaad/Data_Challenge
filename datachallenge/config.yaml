@@ -20,12 +20,12 @@ net:
 
 # training
 training:
-    epochs : 50
+    epochs : 20
     batch_size: 64 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
-    features: 128 # number of features after base model
-    dropout: 0.5
-    lr: 0.001 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
+    features: 256 # number of features after base model
+    dropout: 0.2
+    lr: 0.01 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
     momentum: 0.9
     weight_decay: 0.0005
     opt: adam # not added yet
