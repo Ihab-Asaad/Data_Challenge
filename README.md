@@ -8,4 +8,7 @@ Classify images of the certified data set.
 Your team should provide a model as a python class that implements a  .predict()  method. This method should take a .jpg image as an input and predict the associated class number (see the data folders Txx_* where xx is the class label to predict) along with its confidence (ranging from 0: wide guess, over 0.5: guess according to proportionality in sample, to 1: perfectly confident). Be sure to allow for a class 00 that corresponds to "unable to classify with sufficient confidence" (see below for confidence) and a class 99 that means "class not seen before" (with high confidence this sample does not belong to a learned class). The output arguments should be given in this order as a tuple: (predicted_class_label, confidence, None)  .
 For multiple inputs, a list of tuples could be returned.
 At least 80% of your data must be classified (i.e., they should have a label other than 00)
-The quality of your model will be assessed through two metrics : the accuracy/purity and the precision (both should be at >85% on the classified data)
+The quality of your model will be assessed through two metrics : the accuracy/purity and the precision (both should be at >85% on the classified data).
+
+# Installation
+

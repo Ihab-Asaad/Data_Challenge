@@ -2,3 +2,5 @@ Update the structure of the project.
 Add any useful figure which help understanding the algorithm applied.
 
 logs directory can be placed out of 'datachallenge' folder.
+Check the LICENSE. (and in setup.py as well).
+Update the README.md file.

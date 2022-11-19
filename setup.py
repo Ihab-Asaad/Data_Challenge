@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='Data Challenge',
-      version='0.0.1',
+      version='0.0.0',
       description='Classification + Detection task',
       author='Ihab ASAAD',
       author_email='ihabasaad1@gmail.com',
