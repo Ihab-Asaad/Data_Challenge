@@ -8,7 +8,7 @@ __factory = {
     # 'ex1_data': EX1_DATA, # add external data to train supervised/unsupervised models
     # 'ex2_data': EX2_DATA,
     # 'ex3_data': EX3_DATA,
-    # 'ex4_data': EX4_DATA,
+    'test_data': TEST_SUBMIT,
 }
 
 

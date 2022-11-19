@@ -6,3 +6,4 @@ pyyaml
 metric-learn
 gpustat
 torchmetrics
+opendatasets

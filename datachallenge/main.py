@@ -136,6 +136,7 @@ def main(args):
         evaluator.evaluate(val_loader)
         print("Test:")
         evaluator.evaluate(test_loader)
+        return
     # Criterion
     repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
     print(repeat)
