@@ -225,6 +225,8 @@ def main(args):
     # metric.train(model, train_loader)
     evaluator.evaluate(test_loader)
 
+    # Predict on external test set:
+
 
 if __name__ == '__main__':
     with open(r'/content/Data_Challenge/datachallenge/config.yaml') as file:
