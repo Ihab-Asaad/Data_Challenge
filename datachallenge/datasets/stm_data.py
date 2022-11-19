@@ -5,15 +5,12 @@ import requests
 import zipfile
 import gdown
 from google_drive_downloader import GoogleDriveDownloader as gdd
-# from ..utils.data import Dataset
-# from ..utils.data.dataset import download_extract
 from datachallenge.utils.osutils import mkdir_if_missing
 from datachallenge.utils.serialization import write_json, read_json
 
 from sklearn.model_selection import train_test_split
 from collections import Counter
 
-# class STM_DATA(Dataset):
 class STM_DATA():
     def __init__(self, extract_to=None, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
         if google_id == None:
@@ -34,6 +31,8 @@ class STM_DATA():
         if not self._check_integrity():
             raise RuntimeError("Dataset not found or corrupted. " +
                                "You can use download=True to download it.")
+
+        self.summary()
 
     def _check_integrity(self): # name 'images' as it is in your zip: 'train'
         return osp.isdir(osp.join(self.extract_to, 'train')) and \
@@ -98,6 +97,17 @@ class STM_DATA():
         self.y_test = y_test
         self.weights_trainval = list(Counter(y_train_val).values())
         self.weights_train = list(Counter(y_train).values())
+    def summary(self, verbose = True):
+        if verbose:
+            print(self.__class__.__name__, "dataset loaded")
+            print("  Subset   | # images")
+            print("  ---------------------------")
+            print("  dataset  | {:5d}".format(len(self.X)))
+            print("  classes  | {:5d}".format(self.num_classes))
+            print("  train    | {:5d}".format(len(self.X_train)))
+            print("  val      | {:5d}".format(len(self.X_val)))
+            print("  trainval | {:5d}".format(len(self.X_trainval)))
+            print("  test     | {:5d}".format(len(self.X_test)))
 
 if __name__ == "__main__":
     print("stm_data")

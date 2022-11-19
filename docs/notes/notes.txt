@@ -18,4 +18,4 @@ Add command line testing.
 Add code to upload your trained model to google drive.
 
 Apply cross validation instead of splitting data into fixed portions.
-Kfold, StratifiedKFold, 
+Kfold, RepeatedKFold, GroupKFold, StratifiedKFold, Hold-out, Leave-one-out, Leave-p-out
