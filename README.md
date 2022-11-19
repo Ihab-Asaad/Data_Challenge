@@ -13,6 +13,9 @@ The quality of your model will be assessed through two metrics : the accuracy/pu
 # Installation
 Installation in editable mode (now for our team only):
 After cloning the project, type: **pip install -e .** to install the project in editable mode.
-To train your model: first update the config.yaml file and then run **python datachallenge/main.py**. The best models will be saved in log file in the path defined in 'config.yaml' file 
+Inside the file 'requirement.txt' you can add your libraries.
+
+# Training
+To train your model: first update the config.yaml file and then run **python datachallenge/main.py**. The best model according to the chosen metrics will be saved in log file in the path defined in 'config.yaml' file 
 
 Till now we don't support the command line. and our tests are empty.
