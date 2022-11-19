@@ -1,16 +1,3 @@
-# # run this file after setup.py once, to download dataset:
-# import zipfile
-# import gdown
-# output = "/content/Data_Challenge/datasets/dataset/datachallenge.zip"
-# # same as the above, but with the file ID
-# id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU"
-# gdown.download(id=id, output=output, quiet=False)
-# path_to_zip_file = '/content/Data_Challenge/datasets/dataset/datachallenge.zip'
-# directory_to_extract_to = '/content/Data_Challenge/datasets/dataset'
-# with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
-#     zip_ref.extractall(directory_to_extract_to)
-# # remove(path_to_zip_file)
-
 from __future__ import print_function, absolute_import
 import argparse
 import os

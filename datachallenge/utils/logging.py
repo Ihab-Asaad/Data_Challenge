@@ -43,3 +43,4 @@ class Logger():
         self.console.close()
         if self.file is not None:
             self.file.close()
+
