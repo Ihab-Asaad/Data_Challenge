@@ -1,3 +1,4 @@
+# Monitoring the comsumption of GPUs and memory:
 import torch
 print("Cuda Available: ", torch.cuda.is_available())
 print("Num of GPUs: ", torch.cuda.device_count())
@@ -15,7 +16,7 @@ if device.type == 'cuda':
     print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
     print("Max memory reserved: ", torch.cuda.max_memory_reserved(device=device))
     print(torch.cuda.memory_summary(device=None, abbreviated=False)) # allows you to figure the reason of CUDA running out of memory and restart the kernel to avoid the error from happening again
-    
+
 # get real-time insight on used resources: will loop and call the view at every second.
 # nvidia-smi -l 1 
 
