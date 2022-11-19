@@ -16,3 +16,6 @@ Update the README.md file according to new additions and misunderstood parts.
 Add command line testing.
 
 Add code to upload your trained model to google drive.
+
+Apply cross validation instead of splitting data into fixed portions.
+Kfold, StratifiedKFold, 

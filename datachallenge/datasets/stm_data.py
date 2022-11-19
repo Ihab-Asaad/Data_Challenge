@@ -5,7 +5,6 @@ import requests
 import zipfile
 import gdown
 from google_drive_downloader import GoogleDriveDownloader as gdd
-print(__name__)
 # from ..utils.data import Dataset
 # from ..utils.data.dataset import download_extract
 from datachallenge.utils.osutils import mkdir_if_missing
@@ -46,7 +45,6 @@ class STM_DATA():
             print("File already downloaded...")
             return
         file = gdown.download(id=self.id, output='./stm_data.zip', quiet=False)
-        # print(self.download_to)
         # gdd.download_file_from_google_drive(file_id=self.id,
                                     # dest_path=osp.join('./stm_data.zip'),
                                     # unzip=False)
@@ -57,9 +55,13 @@ class STM_DATA():
         path_to_images = osp.join(self.extract_to, 'train')
         self.images_dir = path_to_images
         list_dirs = sorted(os.listdir(path_to_images)) # this should contains the classes sorted:
+        # classes string is the required output according to the problem:
+        self.classes_str = [1,20,21,22,32,41,44,45]
         self.num_classes = len(list_dirs)
+        # class_path is a list of length (num_classes), each list is of length number of images in each class:
         class_paths = [[] for _ in range(len(list_dirs))]
         size = 0
+        # X is a list containing the paths of all images in dataset, y contains their labels
         X,y = [],[]
         for i, class_path in enumerate(list_dirs):
             class_i = i
@@ -81,7 +83,7 @@ class STM_DATA():
         X,y = self.X, self.y
         X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=42)
         X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
-        # # Save meta information into a json file
+        # Save meta information into a json file
         splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
                 'X_test': X_test,'y_test': y_test}
         write_json(splits, osp.join(self.extract_to, 'splits.json'))
@@ -96,8 +98,6 @@ class STM_DATA():
         self.y_test = y_test
         self.weights_trainval = list(Counter(y_train_val).values())
         self.weights_train = list(Counter(y_train).values())
-        # print(len(X_train),len(y_train),len(X_val), len(y_val),len(X_test), len(y_test))
 
 if __name__ == "__main__":
     print("stm_data")
-    # market_set = STM_DATA(root = "/content/test_folder")
