@@ -26,19 +26,17 @@ def create(name, extract_to, *args, **kwargs):
         or one of external datasets 'exi_data'
     extract_to : str
         The path to the dataset directory. join(data_dir from .yaml , name of dataset)
-    split_id : int, optional
-        The index of data split. Default: 0
-    num_val : int or float, optional
-        When int, it means the number of validation identities. When float,
-        it means the proportion of validation to all the trainval. Default: 100
+    val_split : float, optional
+        Split the trainval set into train and val set with val_split ratio. Default: 0.15
+    test_split : float, optional
+        Split the data into trainval and test set with test_split ratio. Default: 0.2
+    download_to: str, optional
+        Download the data into another folder (just to split the compressed files from the extracted ones). Default: extract_to
+    google_id: str, optional
+        If the data in Google drive, use google_id to download it.
     download : bool, optional
-        If True, will download the dataset. Default: True
+        If True, will download the dataset. Default: True. 
     """
     if name not in __factory:
         raise KeyError("Unknown dataset:", name)
     return __factory[name](extract_to, *args, **kwargs)
-
-
-def get_dataset(name, extract_to, *args, **kwargs):
-    warnings.warn("get_dataset is deprecated. Use create instead.")
-    return create(name, extract_to, *args, **kwargs)

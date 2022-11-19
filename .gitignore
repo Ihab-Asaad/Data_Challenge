@@ -10,3 +10,4 @@ datachallenge/__pycache__
 datachallenge/evaluation_metrics/__pycache__/
 datachallenge/models/__pycache__
 *.zip
+datachallenge/logs/
