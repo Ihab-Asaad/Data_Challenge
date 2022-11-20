@@ -13,6 +13,8 @@ from collections import Counter
 
 import os
 
+os.environ["KAGGLE_USERNAME"] = 'ihabasaad'
+os.environ["KAGGLE_KEY"] = '743ea9ddf4935aa2a7a41ac72b038849'
 import kaggle
 from kaggle.api.kaggle_api_extended import KaggleApi
 
@@ -36,6 +38,8 @@ class TEST_SUBMIT():
         if download:
             self.download()
 
+        self.scan()
+
         self.summary()
 
     def _check_integrity(self): # name 'images' as it is in your zip: 'train'
@@ -46,10 +50,9 @@ class TEST_SUBMIT():
         if osp.isfile('./msiam-sigma-dc-2223.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
             print("File already downloaded...")
             return
-        os.environ["KAGGLE_USERNAME"] = "ihabasaad"
-        os.environ["KAGGLE_KEY"] = "743ea9ddf4935aa2a7a41ac72b038849"
+
         api = KaggleApi()
-        # api.authenticate()
+        api.authenticate()
         api.competition_download_files('msiam-sigma-dc-2223',
                               path='./')
         with zipfile.ZipFile('./msiam-sigma-dc-2223.zip', 'r') as zip_ref:

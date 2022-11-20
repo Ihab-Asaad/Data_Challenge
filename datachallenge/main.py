@@ -31,14 +31,15 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     extract_to = osp.join(data_dir, name)
     
     dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
-    dataset_test = datasets.create('test_data', extract_to, download = True)
-    
+    dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
+
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
     train_set = (dataset.X_trainval, dataset.y_trainval) if combine_trainval else (dataset.X_train, dataset.y_train)
     val_set = (dataset.X_val, dataset.y_val)
     test_set = (dataset.X_test, dataset.y_test)
+    test_set_submit = (dataset_test.X)
     num_classes = dataset.num_classes
 
     train_transformer = T.Compose([
@@ -52,6 +53,10 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
         T.RectScale(height, width),
         T.ToTensor(),
         normalizer,
+    ])
+
+    test_submit_transformer = T.Compose([
+        T.ToTensor()
     ])
 
     train_loader = DataLoader(
@@ -75,7 +80,11 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
 
-    return dataset, num_classes, train_loader, val_loader, test_loader
+    test_submit_loader = DataLoader(
+        Preprocessor(test_set_submit, root = dataset_test.images_dir, transform=test_submit_transformer),
+        batch_size = 1, num_workers=workers, shuffle=False, pin_memory=True)
+
+    return dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader
 
 def seed_all(seed):
   random.seed(seed)
@@ -103,7 +112,7 @@ def main(args):
     if height is None or width is None:
         height, width = (144, 56) if args.arch == 'inception' else \
                                   (256, 128)
-    dataset, num_classes, train_loader, val_loader, test_loader = \
+    dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader = \
         get_data(args["dataset"]["name"], args["training_configs"]["val_split"], \
         args["training_configs"]["test_split"], args["logging"]["data_dir"], height, width, \
         args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
@@ -130,6 +139,11 @@ def main(args):
     
     # Evaluator
     evaluator = Evaluator(model, device)
+
+    if args["training_configs"]["predict"]:
+        print("Prediction:")
+        evaluator.predict(test_submit_loader)
+        return
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)

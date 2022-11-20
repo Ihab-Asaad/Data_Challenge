@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 import time
 from collections import OrderedDict
 import numpy as np
+import pandas as pd
 import torch
 
 from .evaluation_metrics import accuracy, prec_rec, f1
@@ -35,6 +36,25 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
         targets_ = torch.cat([x for x in targets], dim=0)
         logits_ = torch.cat([x for x in logits], dim=0)
     return logits_, targets_
+
+def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device('cpu')):
+    model.eval()
+    batch_time = AverageMeter()
+    end = time.time()
+    logits, imgs_names = [], []
+    for i, (img, img_name) in enumerate(data_loader): # batch size here is one
+        batch_time.update(time.time() - end) # the time of getting new batch
+        outputs = get_logits_batch(model, img, device)
+        logits.append(outputs)
+        if (i + 1) % print_freq == 0:
+            print('Get outputs: [{}/{}]\t'
+                  'Time {:.3f} ({:.3f})\t'
+                  .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
+        end = time.time()
+        logits_ = np.argmax(torch.cat([x for x in logits], dim=0))
+        imgs_names.append(img_name[0])
+        print(img_name)
+    return imgs_names, logits_
 
 def evaluate_all(logits, targets):
     acc_ = accuracy(logits, targets)
@@ -83,3 +103,9 @@ class Evaluator(object):
         acc_ , prec_, rec_, f1_ = evaluate_all(logits, targets)
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_)
         return acc_ , prec_, rec_, f1_
+
+    def predict(self, data_loader):
+        imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
+        print(imgs_names)
+        df = pd.DataFrame({'id': imgs_names, 'label': logits.tolist()})
+        df.to_csv('submission.csv', index=False)

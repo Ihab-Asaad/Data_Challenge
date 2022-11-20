@@ -20,13 +20,22 @@ class Preprocessor(object):
         return self._get_single_item(indices)
 
     def _get_single_item(self, index):
-        X_data = self.dataset[0]
-        y_data = self.dataset[1]
-        image_path , class_i = X_data[index], y_data[index]
-        # fpath = fname
-        # if self.root is not None:
-        #     fpath = osp.join(self.root, fname)
-        img = Image.open(image_path).convert('RGB')
-        if self.transform is not None:
-            img = self.transform(img)
-        return img, class_i
+        if isinstance(self.dataset, tuple):
+            X_data = self.dataset[0]
+            y_data = self.dataset[1]
+            image_path , class_i = X_data[index], y_data[index]
+            # fpath = fname
+            # if self.root is not None:
+            #     fpath = osp.join(self.root, fname)
+            img = Image.open(image_path).convert('RGB')
+            if self.transform is not None:
+                img = self.transform(img)
+            return img, class_i
+        else: # for test data
+            X_data = self.dataset
+            image_path = X_data[index]
+            img = Image.open(image_path).convert('RGB')
+            if self.transform is not None:
+                img = self.transform(img)
+            img_name = image_path.split('/')[-1].split('.')[0] # return list of one element
+            return img, img_name
