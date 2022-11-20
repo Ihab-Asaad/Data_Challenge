@@ -23,9 +23,6 @@ from datachallenge.utils.data.preprocessor import Preprocessor
 from datachallenge.utils.logging import Logger  
 from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 
-# 
-# from reid.loss import TripletLoss
-
 
 def get_data(name, val_split, test_split, data_dir, height, width, batch_size, workers, combine_trainval):
     extract_to = osp.join(data_dir, name)
@@ -56,7 +53,9 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     ])
 
     test_submit_transformer = T.Compose([
-        T.ToTensor()
+        T.RectScale(height, width),
+        T.ToTensor(),
+        normalizer,
     ])
 
     train_loader = DataLoader(
@@ -91,7 +90,7 @@ def seed_all(seed):
   np.random.seed(seed)
   torch.manual_seed(seed)
   cudnn.deterministic = True
-  cudnn.benchmark = True # to speed up the training, when computation graph does not change, usually set to False ??
+  cudnn.benchmark = True # to speed up the training, when computation graph does not change (fixed input size)
   torch.cuda.manual_seed_all(seed)
   os.environ['PYTHONHASHSEED'] = str(seed)
 
@@ -104,14 +103,14 @@ def main(args):
     
     # Redirect print to both console and log file
     if not args["training_configs"]["evaluate"]:
-        sys.stdout = Logger(osp.join(args["logging"]["logs_dir"], 'log.txt')) # 
+        sys.stdout = Logger(osp.join(args["logging"]["logs_dir"], 'log.txt'))
     
     # Create data loaders
     height = args["net"]["height"]
     width = args["net"]["width"]
     if height is None or width is None:
-        height, width = (144, 56) if args.arch == 'inception' else \
-                                  (256, 128)
+        height, width = (224, 224) 
+
     dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader = \
         get_data(args["dataset"]["name"], args["training_configs"]["val_split"], \
         args["training_configs"]["test_split"], args["logging"]["data_dir"], height, width, \
@@ -121,7 +120,7 @@ def main(args):
     # Create model
     model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                           dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
-    print(model)
+    # print(model)
     # Load from checkpoint
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
