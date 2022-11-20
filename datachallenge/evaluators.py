@@ -107,5 +107,5 @@ class Evaluator(object):
 
     def predict(self, data_loader, classes_str):
         imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
-        df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[3] for i in logits.tolist()]})
+        df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
         df.to_csv('submission.csv', index=False)
