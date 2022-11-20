@@ -12,7 +12,10 @@ class Preprocessor(object):
         self.transform = transform
 
     def __len__(self):
-        return len(self.dataset[0])
+        if isinstance(self.dataset, tuple):
+            return len(self.dataset[0])
+        else:
+            return len(self.dataset)
 
     def __getitem__(self, indices):
         if isinstance(indices, (tuple, list)):

@@ -157,7 +157,6 @@ def main(args):
     torch_repeat = torch.Tensor(repeat)
     class_weights = sum(torch_repeat)/torch_repeat
     criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
-    # criterion =  TripletLoss(0.5).cuda()
 
     # Optimizer
     # if hasattr(model.module, 'base'):
