@@ -7,3 +7,4 @@ metric-learn
 gpustat
 torchmetrics
 opendatasets
+kaggle

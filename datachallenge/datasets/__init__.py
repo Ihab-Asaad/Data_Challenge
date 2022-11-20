@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import warnings
 
 from .stm_data import STM_DATA
+from .test_data import TEST_SUBMIT
 
 __factory = {
     'stm_data': STM_DATA,

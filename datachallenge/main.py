@@ -31,7 +31,8 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     extract_to = osp.join(data_dir, name)
     
     dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
-
+    dataset_test = datasets.create('test_data', extract_to, download = True)
+    
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
