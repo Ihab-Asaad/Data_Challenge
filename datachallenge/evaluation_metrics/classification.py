@@ -16,6 +16,6 @@ def prec_rec(output, target):
     return prec_, rec_
 
 def f1(output, target):
-    metric = MulticlassF1Score(num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/f1_score.html
+    metric = MulticlassF1Score(num_classes=8, average = 'weighted') # https://torchmetrics.readthedocs.io/en/stable/classification/f1_score.html
     f1_ = metric(output, target)
     return f1_

@@ -45,15 +45,16 @@ def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device(
     for i, (img, img_name) in enumerate(data_loader): # batch size here is one
         batch_time.update(time.time() - end) # the time of getting new batch
         outputs = get_logits_batch(model, img, device)
-        logits.append(outputs)
+        logits.append(np.argmax(outputs))
+        imgs_names.append(img_name[0])
         if (i + 1) % print_freq == 0:
             print('Get outputs: [{}/{}]\t'
                   'Time {:.3f} ({:.3f})\t'
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
-        logits_ = np.argmax(torch.cat([x for x in logits], dim=0))
-        imgs_names.append(img_name[0])
-        print(img_name)
+        # logits_ = torch.cat([x for x in logits], dim=0)
+    print(logits)
+    logits_ = torch.IntTensor(logits)        
     return imgs_names, logits_
 
 def evaluate_all(logits, targets):
@@ -104,8 +105,7 @@ class Evaluator(object):
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_)
         return acc_ , prec_, rec_, f1_
 
-    def predict(self, data_loader):
+    def predict(self, data_loader, classes_str):
         imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
-        print(imgs_names)
         df = pd.DataFrame({'id': imgs_names, 'label': logits.tolist()})
         df.to_csv('submission.csv', index=False)
