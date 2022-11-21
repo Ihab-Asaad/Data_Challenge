@@ -20,7 +20,7 @@ net:
 
 # training
 training:
-    epochs : 100
+    epochs : 150
     batch_size: 64 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
     features: 256 # number of features after base model
