@@ -12,3 +12,5 @@ datachallenge/models/__pycache__
 *.zip
 datachallenge/logs/
 *.csv
+*.tar
+logs/checkpoint.pth.tar
