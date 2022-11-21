@@ -206,7 +206,7 @@ def main(args):
         if epoch < args["training_configs"]["start_save"]:
             continue
         metrics_ = evaluator.evaluate(val_loader)
-        top1 = metrics_[3] # accuracy
+        top1 = metrics_[4] # accuracy
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
         save_checkpoint({

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from .evaluation_metrics import accuracy, prec_rec, f1
+from .evaluation_metrics import accuracy, prec_rec, f1, top2acc
 from .utils.meters import AverageMeter
 from datachallenge.utils import to_torch
 
@@ -61,7 +61,8 @@ def evaluate_all(logits, targets):
     acc_ = accuracy(logits, targets)
     prec_, rec_ = prec_rec(logits, targets)
     f1_ = f1(logits, targets)
-    return acc_, prec_, rec_, f1_
+    acc2 = top2acc(logits, targets)
+    return acc_, prec_, rec_, f1_, acc2
     # Compute mean AP
     # mAP = mean_ap(distmat, query_ids, gallery_ids, query_cams, gallery_cams)
     # print('Mean AP: {:4.1%}'.format(mAP))
@@ -101,9 +102,9 @@ class Evaluator(object):
 
     def evaluate(self, data_loader):
         logits, targets = get_logits_all(self.model, data_loader, device = self.device)
-        acc_ , prec_, rec_, f1_ = evaluate_all(logits, targets)
-        print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_)
-        return acc_ , prec_, rec_, f1_
+        acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
+        print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
+        return acc_ , prec_, rec_, f1_, top2acc_
 
     def predict(self, data_loader, classes_str):
         imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
