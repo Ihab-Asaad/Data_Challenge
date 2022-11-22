@@ -8,3 +8,5 @@ gpustat
 torchmetrics
 opendatasets
 kaggle
+albumentations==1.0.0
+timm==0.4.5

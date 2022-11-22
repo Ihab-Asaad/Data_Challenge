@@ -4,6 +4,9 @@ from torchvision.transforms import * # Normalize, ToTensor, RandomHorizontalFlip
 from PIL import Image
 import random
 import math
+import albumentations as albu
+from albumentations.pytorch import ToTensorV2
+from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
 class RectScale(object):
@@ -47,3 +50,29 @@ class RandomSizedRectCrop(object):
         scale = RectScale(self.height, self.width,
                           interpolation=self.interpolation)
         return scale(img)
+
+class SomeTrans():
+    def __init__(self):
+         self.transform = albu.Compose([
+                # albu.RandomResizedCrop(height=self.image_size, width=self.image_size, scale=(0.25, 1.0), ratio=(0.75, 1.3333333333333333), interpolation=1, p=1.0),
+                albu.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=30, interpolation=1, border_mode=0, value=0, p=0.25),
+                albu.HorizontalFlip(p=0.5),
+                albu.VerticalFlip(p=0.5),
+                albu.OneOf([
+                    albu.MotionBlur(p=.2),
+                    albu.MedianBlur(blur_limit=3, p=0.1),
+                    albu.Blur(blur_limit=3, p=0.1),
+                ], p=0.25),
+                albu.OneOf([
+                    albu.CLAHE(clip_limit=2),
+                    albu.IAASharpen(),
+                    albu.IAAEmboss(),
+                    albu.RandomBrightnessContrast(),            
+                ], p=0.25),
+                albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
+                # albu.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
+                # ToTensorV2(),
+            ])
+    def __call__(self, img):
+        image = self.transform(image=img)['image']
+        return image

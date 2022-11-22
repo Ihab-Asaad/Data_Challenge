@@ -40,9 +40,10 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     num_classes = dataset.num_classes
 
     train_transformer = T.Compose([
-        T.RandomSizedRectCrop(height, width),
-        T.RandomHorizontalFlip(),
-        T.ToTensor(),
+        T.SomeTrans(),
+        # T.RandomSizedRectCrop(height, width),
+        # T.RandomHorizontalFlip(),
+        # T.ToTensor(),
         normalizer,
     ])
 

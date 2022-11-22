@@ -27,3 +27,5 @@ Integrate W&B online platform with the code to simulate the model performance.
 Preprocessing.
 
 provide the same number of images from each class in a batch : https://stackoverflow.com/questions/67535660/how-to-construct-batch-that-return-equal-number-of-images-for-per-classes
+
+Apply ensemble learning. (tested for two models  (cusnet & resnet50 ) and got acc: 0.95984)
