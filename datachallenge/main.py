@@ -141,7 +141,12 @@ def main(args):
 
     if args["training_configs"]["predict"]:
         print("Prediction:")
-        evaluator.predict(test_submit_loader, dataset.classes_str)
+        model1 = models.create('cusnet', num_features=args["training"]["features"],
+                          dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+        model2 = models.create('resnet50', num_features=args["training"]["features"],
+                          dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+        evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2], \
+        paths = ['/content/Data_Challenge/datachallenge/logs/cusnet/','/content/Data_Challenge/datachallenge/logs/'])
         return
 
     if args["training_configs"]["evaluate"]:
@@ -206,7 +211,7 @@ def main(args):
         if epoch < args["training_configs"]["start_save"]:
             continue
         metrics_ = evaluator.evaluate(val_loader)
-        top1 = metrics_[4] # accuracy
+        top1 = metrics_[3] # accuracy
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
         save_checkpoint({
