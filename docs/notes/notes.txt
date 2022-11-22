@@ -19,3 +19,11 @@ Add code to upload your trained model to google drive.
 
 Apply cross validation instead of splitting data into fixed portions.
 Kfold, RepeatedKFold, GroupKFold, StratifiedKFold, Hold-out, Leave-one-out, Leave-p-out
+
+Appy some techniques to speed up training (16-bit precision, ex:https://towardsdatascience.com/pytorch-training-tricks-and-tips-a8808ebf746c)
+
+Integrate W&B online platform with the code to simulate the model performance.
+
+Preprocessing.
+
+provide the same number of images from each class in a batch : https://stackoverflow.com/questions/67535660/how-to-construct-batch-that-return-equal-number-of-images-for-per-classes
