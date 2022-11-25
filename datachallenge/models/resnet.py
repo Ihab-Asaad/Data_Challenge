@@ -20,7 +20,7 @@ class ResNet(nn.Module):
     }
 
     def __init__(self, depth, pretrained=True, cut_at_pooling=False,
-                 num_features=0, norm=False, dropout=0, num_classes=0):
+                 num_features=0, norm=False, dropout=0, num_classes=0, train_pretrained = False):
         super(ResNet, self).__init__()
 
         self.depth = depth
@@ -31,6 +31,10 @@ class ResNet(nn.Module):
         if depth not in ResNet.__factory:
             raise KeyError("Unsupported depth:", depth)
         self.base = ResNet.__factory[depth](pretrained=pretrained)
+
+        if not train_pretrained :
+            for param in self.base.parameters():
+                param.requires_grad = False
 
         if not self.cut_at_pooling:
             self.num_features = num_features

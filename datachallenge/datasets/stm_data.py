@@ -14,7 +14,7 @@ from collections import Counter
 class STM_DATA():
     def __init__(self, extract_to=None, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
         if google_id == None:
-            google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU"
+            google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU&confirm=t"
         self.id = google_id
         self.val_split = val_split
         self.test_split = test_split
@@ -43,7 +43,7 @@ class STM_DATA():
         if osp.isfile('./stm_data.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
             print("File already downloaded...")
             return
-        file = gdown.download(id=self.id, output='./stm_data.zip', quiet=False)
+        file = gdown.download(id=self.id, output='./stm_data.zip', quiet=False )
         # gdd.download_file_from_google_drive(file_id=self.id,
                                     # dest_path=osp.join('./stm_data.zip'),
                                     # unzip=False)

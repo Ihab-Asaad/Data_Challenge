@@ -40,10 +40,10 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     num_classes = dataset.num_classes
 
     train_transformer = T.Compose([
-        T.SomeTrans(),
-        # T.RandomSizedRectCrop(height, width),
-        # T.RandomHorizontalFlip(),
-        # T.ToTensor(),
+        # T.SomeTrans(),
+        T.RandomSizedRectCrop(height, width),
+        T.RandomHorizontalFlip(),
+        T.ToTensor(),
         normalizer,
     ])
 
@@ -121,6 +121,9 @@ def main(args):
     # Create model
     model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                           dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
+    total_parameters = sum(p.numel() for p in model.parameters())
+    trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
     # print(model)
     # Load from checkpoint
     start_epoch = best_top1 = 0
@@ -139,15 +142,20 @@ def main(args):
     
     # Evaluator
     evaluator = Evaluator(model, device)
-
+    ensemble = False
+    paths = []
     if args["training_configs"]["predict"]:
         print("Prediction:")
-        model1 = models.create('cusnet', num_features=args["training"]["features"],
-                          dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-        model2 = models.create('resnet50', num_features=args["training"]["features"],
-                          dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-        evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2], \
-        paths = ['/content/Data_Challenge/datachallenge/logs/cusnet/','/content/Data_Challenge/datachallenge/logs/'])
+        if ensemble:
+            model1 = models.create('cusnet', num_features=args["training"]["features"],
+                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+            model2 = models.create('resnet50', num_features=args["training"]["features"],
+                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+            evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2], \
+            paths = ['/content/Data_Challenge/datachallenge/logs/cusnet/','/content/Data_Challenge/datachallenge/logs/'])
+            return
+    else:
+        evaluator.predict(test_submit_loader)
         return
 
     if args["training_configs"]["evaluate"]:

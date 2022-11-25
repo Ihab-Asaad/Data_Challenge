@@ -54,7 +54,7 @@ class TEST_SUBMIT():
         api = KaggleApi()
         api.authenticate()
         api.competition_download_files('msiam-sigma-dc-2223',
-                              path='./')
+                              path='./', quiet = False)
         with zipfile.ZipFile('./msiam-sigma-dc-2223.zip', 'r') as zip_ref:
             zip_ref.extractall(self.extract_to)
 

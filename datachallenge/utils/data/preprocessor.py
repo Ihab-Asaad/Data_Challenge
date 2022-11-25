@@ -31,14 +31,14 @@ class Preprocessor(object):
             # fpath = fname
             # if self.root is not None:
             #     fpath = osp.join(self.root, fname)
-            img = np.asarray(Image.open(image_path).convert('RGB'))
+            img = Image.open(image_path).convert('RGB')
             if self.transform is not None:
                 img = self.transform(img)
             return img, class_i
         else: # for test data
             X_data = self.dataset
             image_path = X_data[index]
-            img = np.asarray(Image.open(image_path).convert('RGB'))
+            img = Image.open(image_path).convert('RGB')
             if self.transform is not None:
                 img = self.transform(img)
             img_name = image_path.split('/')[-1].split('.')[0] # return list of one element

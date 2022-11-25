@@ -130,7 +130,7 @@ class Evaluator(object):
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
         return acc_ , prec_, rec_, f1_, top2acc_
 
-    def predict(self, data_loader, classes_str, ensemble = True, models = None, paths = None):
+    def predict(self, data_loader, classes_str, ensemble = False, models = None, paths = None):
         if ensemble:
             model1 = models[0]
             model2 = models[1]
