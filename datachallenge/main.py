@@ -47,15 +47,11 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        # T.SomeTrans(),
-        T.RandomSizedRectCrop(height, width),
-        T.RandomHorizontalFlip(),
-        T.ToTensor(),
-
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        normalizer,
+        T.SomeTrans(224,224),
+        # T.RandomSizedRectCrop(height, width),
+        # T.RandomHorizontalFlip(),
+        # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
+        # T.ToTensor(),
     ])
 
     test_transformer = T.Compose([

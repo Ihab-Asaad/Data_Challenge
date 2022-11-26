@@ -4,7 +4,7 @@ from torchvision.transforms import * # Normalize, ToTensor, RandomHorizontalFlip
 from PIL import Image
 import random
 import math
-import albumentations as albu
+import albumentations as albu # see: https://albumentations.ai/docs/getting_started/image_augmentation/
 from albumentations.pytorch import ToTensorV2
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
@@ -53,9 +53,14 @@ class RandomSizedRectCrop(object):
         return scale(img)
 
 class SomeTrans():
-    def __init__(self):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+        IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
          self.transform = albu.Compose([
-                # albu.RandomResizedCrop(height=self.image_size, width=self.image_size, scale=(0.25, 1.0), ratio=(0.75, 1.3333333333333333), interpolation=1, p=1.0),
+            # read about transforms and add more from here: https://albumentations.ai/docs/api_reference/augmentations/transforms/
+                albu.RandomResizedCrop(height=self.width, width=self.height, scale=(0.25, 1.0), ratio=(0.75, 1.3333333333333333), interpolation=1, p=1.0),
                 albu.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=30, interpolation=1, border_mode=0, value=0, p=0.25),
                 albu.HorizontalFlip(p=0.5),
                 albu.VerticalFlip(p=0.5),
@@ -71,9 +76,10 @@ class SomeTrans():
                     albu.RandomBrightnessContrast(),            
                 ], p=0.25),
                 albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
-                # albu.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
-                # ToTensorV2(),
+                albu.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
+                ToTensorV2(),
             ])
     def __call__(self, img):
-        image = self.transform(image=img)['image']
+        image = np.array(img)
+        image = self.transform(image=image)['image']
         return image
