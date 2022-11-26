@@ -47,7 +47,7 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        T.SomeTrans(224,224),
+        T.SomeTrans(224,224), 
         # T.RandomSizedRectCrop(height, width),
         # T.RandomHorizontalFlip(),
         # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
@@ -66,6 +66,8 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
         normalizer,
     ])
 
+    # https://pytorch.org/docs/master/data.html#torch.utils.data.sampler.WeightedRandomSampler
+    # https://stackoverflow.com/questions/67535660/how-to-construct-batch-that-return-equal-number-of-images-for-per-classes
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=dataset.images_dir,
@@ -128,11 +130,14 @@ def main(args):
     # Create model
     model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                           dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
+
+    # create summary:
     total_parameters = sum(p.numel() for p in model.parameters())
     trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
     # print(model)
-    # Load from checkpoint
+
+    # Load from checkpoint: 
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
         print("Load from saved model...")
@@ -144,25 +149,27 @@ def main(args):
               .format(start_epoch, best_top1))
     # model = nn.DataParallel(model).cuda() # this add attribute 'module' to model
     
-    # Distance metric
+    # Distance metric, will be added later
     # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
     
     # Evaluator
     evaluator = Evaluator(model, device)
-    ensemble = False
+
+    # add ensemble to .yaml file
+    ensemble = True
     paths = []
     if args["training_configs"]["predict"]:
         print("Prediction:")
         if ensemble:
-            model1 = models.create('cusnet', num_features=args["training"]["features"],
+            model1 = models.create('resnet18', num_features=args["training"]["features"],
                             dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             model2 = models.create('resnet50', num_features=args["training"]["features"],
                             dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2], \
-            paths = ['/content/Data_Challenge/datachallenge/logs/cusnet/','/content/Data_Challenge/datachallenge/logs/'])
+            paths = ['/content/Data_Challenge/datachallenge/logs/resnet18_aug/','/content/Data_Challenge/datachallenge/logs/resnet50_aug/'])
             return
         else:
-            evaluator.predict(test_submit_loader)
+            evaluator.predict(test_submit_loader, dataset.classes_str)
             return
 
     if args["training_configs"]["evaluate"]:
@@ -173,7 +180,7 @@ def main(args):
         evaluator.evaluate(test_loader)
         # make a folder for misclassified images:
         return
-    # Criterion
+    # Criterion: pass weights to loss function:
     repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
     print(repeat)
     torch_repeat = torch.Tensor(repeat)
@@ -194,6 +201,8 @@ def main(args):
     #                             momentum=args["training"]["momentum"],
     #                             weight_decay=args["training"]["weight_decay"],
     #                             nesterov=True)
+
+    # in case you are using a pretrained model, train its weights with lower lr to not destroy the prelearned features.
     if hasattr(model, 'base'):
         base_param_ids = set(map(id, model.base.parameters()))
         new_params = [p for p in model.parameters() if
@@ -213,7 +222,8 @@ def main(args):
     # Trainer
     trainer = Trainer(model, criterion, device)
 
-    # Schedule learning rate
+    # print lr with metrics:
+    # Schedule learning rate, see automation functions:
     def adjust_lr(epoch):
         step_size = 60 if args["net"]["arch"] == 'inception' else 40
         lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
@@ -227,7 +237,7 @@ def main(args):
         if epoch < args["training_configs"]["start_save"]:
             continue
         metrics_ = evaluator.evaluate(val_loader)
-        top1 = metrics_[3] # accuracy
+        top1 = metrics_[3] # f1 score
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
         save_checkpoint({

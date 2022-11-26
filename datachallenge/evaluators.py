@@ -132,6 +132,10 @@ class Evaluator(object):
 
     def predict(self, data_loader, classes_str, ensemble = False, models = None, paths = None):
         if ensemble:
+            # for path in paths:
+                # checkpoint = load_checkpoint(osp.join(path,'model_best.pth.tar'))
+                # model.load_state_dict(checkpoint1['state_dict'])
+                # imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
             model1 = models[0]
             model2 = models[1]
             checkpoint1 = load_checkpoint(osp.join(paths[0],'model_best.pth.tar'))
