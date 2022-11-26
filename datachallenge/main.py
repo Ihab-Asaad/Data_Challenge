@@ -156,7 +156,7 @@ def main(args):
     evaluator = Evaluator(model, device)
 
     # add ensemble to .yaml file
-    ensemble = True
+    ensemble = False
     paths = []
     if args["training_configs"]["predict"]:
         print("Prediction:")
@@ -166,7 +166,7 @@ def main(args):
             model2 = models.create('resnet50', num_features=args["training"]["features"],
                             dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2], \
-            paths = ['/content/Data_Challenge/datachallenge/logs/resnet18_aug/','/content/Data_Challenge/datachallenge/logs/resnet50_aug/'])
+            paths = ['/content/Data_Challenge/datachallenge/logs/resnet18_aug/','/content/Data_Challenge/datachallenge/logs/resnet50__aug/'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -178,6 +178,8 @@ def main(args):
         evaluator.evaluate(val_loader)
         print("Test:")
         evaluator.evaluate(test_loader)
+        print("Train:")
+        evaluator.evaluate(train_loader)
         # make a folder for misclassified images:
         return
     # Criterion: pass weights to loss function:

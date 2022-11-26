@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from .evaluation_metrics import accuracy, prec_rec, f1, top2acc
+from .evaluation_metrics import accuracy, prec_rec, f1, top2acc, conf_matrix
 from .utils.meters import AverageMeter
 from datachallenge.utils import to_torch
 from datachallenge.utils.serialization import load_checkpoint
@@ -126,9 +126,12 @@ class Evaluator(object):
 
     def evaluate(self, data_loader):
         logits, targets = get_logits_all(self.model, data_loader, device = self.device)
+        confusion_matrix = conf_matrix(logits, targets)
         acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
-        return acc_ , prec_, rec_, f1_, top2acc_
+        print("Confusion_matrix: \n", confusion_matrix)
+        print(logits, logits.shape)
+        return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
     def predict(self, data_loader, classes_str, ensemble = False, models = None, paths = None):
         if ensemble:

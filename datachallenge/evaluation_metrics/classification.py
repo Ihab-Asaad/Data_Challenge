@@ -5,6 +5,7 @@ from torchmetrics.classification import MulticlassF1Score
 from torchmetrics.functional import precision_recall
 # from torchmetrics import Accuracy
 from torchmetrics.classification import MulticlassAccuracy
+from torchmetrics import ConfusionMatrix
 import torch 
 
 
@@ -20,6 +21,10 @@ def f1(output, target):
     metric = MulticlassF1Score(num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/f1_score.html
     f1_ = metric(output, target)
     return f1_
+
+def conf_matrix(output, target):
+    confmat = ConfusionMatrix(num_classes=8)
+    return confmat(output, target)
 
 def top2acc(output, target, top = 2):
     class_i = -1*torch.zeros([target.shape[0],top], dtype=torch.long)
