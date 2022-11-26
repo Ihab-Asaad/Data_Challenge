@@ -8,6 +8,7 @@ import albumentations as albu
 from albumentations.pytorch import ToTensorV2
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
+# All transformations accept PIL Image, Tensor Image or batch of Tensor Images as input
 
 class RectScale(object):
     def __init__(self, height, width, interpolation=Image.BILINEAR):
