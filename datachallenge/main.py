@@ -161,9 +161,9 @@ def main(args):
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2], \
             paths = ['/content/Data_Challenge/datachallenge/logs/cusnet/','/content/Data_Challenge/datachallenge/logs/'])
             return
-    else:
-        evaluator.predict(test_submit_loader)
-        return
+        else:
+            evaluator.predict(test_submit_loader)
+            return
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)

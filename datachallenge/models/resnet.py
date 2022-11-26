@@ -19,8 +19,8 @@ class ResNet(nn.Module):
         152: torchvision.models.resnet152,
     }
 
-    def __init__(self, depth, pretrained=True, cut_at_pooling=False,
-                 num_features=0, norm=False, dropout=0, num_classes=0, train_pretrained = False):
+    def __init__(self, depth, pretrained= True, cut_at_pooling=False,
+                 num_features=0, norm=False, dropout=0, num_classes=0, train_pretrained = True):
         super(ResNet, self).__init__()
 
         self.depth = depth
@@ -30,7 +30,7 @@ class ResNet(nn.Module):
         # Construct base (pretrained) resnet
         if depth not in ResNet.__factory:
             raise KeyError("Unsupported depth:", depth)
-        self.base = ResNet.__factory[depth](pretrained=pretrained)
+        self.base = ResNet.__factory[depth](weights='DEFAULT')
 
         if not train_pretrained :
             for param in self.base.parameters():

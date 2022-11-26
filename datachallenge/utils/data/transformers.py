@@ -7,6 +7,7 @@ import math
 import albumentations as albu # see: https://albumentations.ai/docs/getting_started/image_augmentation/
 from albumentations.pytorch import ToTensorV2
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+import numpy as np
 
 # All transformations accept PIL Image, Tensor Image or batch of Tensor Images as input
 
@@ -56,9 +57,9 @@ class SomeTrans():
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
-        IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
-         self.transform = albu.Compose([
+        # IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+        # IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+        self.transform = albu.Compose([
             # read about transforms and add more from here: https://albumentations.ai/docs/api_reference/augmentations/transforms/
                 albu.RandomResizedCrop(height=self.width, width=self.height, scale=(0.25, 1.0), ratio=(0.75, 1.3333333333333333), interpolation=1, p=1.0),
                 albu.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=30, interpolation=1, border_mode=0, value=0, p=0.25),
@@ -80,6 +81,6 @@ class SomeTrans():
                 ToTensorV2(),
             ])
     def __call__(self, img):
-        image = np.array(img)
+        image = np.array(img) # albu takes np array as input
         image = self.transform(image=image)['image']
         return image
