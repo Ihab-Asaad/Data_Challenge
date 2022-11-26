@@ -59,9 +59,10 @@ def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device(
     logits_ = torch.IntTensor(logits)        
     return imgs_names, logits_
 
-def get_logits_all_test_ensemble(model1, model2, data_loader, print_freq=1, device = torch.device('cpu')):
+def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq=1, device = torch.device('cpu')):
     model1.eval()
     model2.eval()
+    model3.eval()
     batch_time = AverageMeter()
     end = time.time()
     logits, imgs_names = [], []
@@ -69,7 +70,8 @@ def get_logits_all_test_ensemble(model1, model2, data_loader, print_freq=1, devi
         batch_time.update(time.time() - end) # the time of getting new batch
         outputs1 = get_logits_batch(model1, img, device)
         outputs2 = get_logits_batch(model2, img, device)
-        logits.append(np.argmax((outputs1+outputs2)/2.))
+        output3 = get_logits_batch(model3, img, device)
+        logits.append(np.argmax((outputs1+outputs2+output3)/3.))
         imgs_names.append(img_name[0])
         if (i + 1) % print_freq == 0:
             print('Get outputs: [{}/{}]\t'
@@ -141,11 +143,14 @@ class Evaluator(object):
                 # imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
             model1 = models[0]
             model2 = models[1]
+            model3 = models[2]
             checkpoint1 = load_checkpoint(osp.join(paths[0],'model_best.pth.tar'))
             checkpoint2 = load_checkpoint(osp.join(paths[1],'model_best.pth.tar'))
+            checkpoint3 = load_checkpoint(osp.join(paths[2],'model_best.pth.tar'))
             model1.load_state_dict(checkpoint1['state_dict'])
             model2.load_state_dict(checkpoint2['state_dict'])
-            imgs_names, logits = get_logits_all_test_ensemble(model1, model2, data_loader, device = self.device)
+            model3.load_state_dict(checkpoint3['state_dict'])
+            imgs_names, logits = get_logits_all_test_ensemble(model1, model2, model3, data_loader, device = self.device)
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
             return 
