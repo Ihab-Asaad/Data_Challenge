@@ -25,25 +25,36 @@ from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 
 
 def get_data(name, val_split, test_split, data_dir, height, width, batch_size, workers, combine_trainval):
-    extract_to = osp.join(data_dir, name)
     
+    extract_to = osp.join(data_dir, name) 
+
+    # create dataset:
     dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
+
+    # create test dataset, this is the unlabeled data to be submitted:
     dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
 
+    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
+    # get the data portions, to pass them later to datalaoders:
     train_set = (dataset.X_trainval, dataset.y_trainval) if combine_trainval else (dataset.X_train, dataset.y_train)
     val_set = (dataset.X_val, dataset.y_val)
     test_set = (dataset.X_test, dataset.y_test)
     test_set_submit = (dataset_test.X)
     num_classes = dataset.num_classes
 
+    # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
         # T.SomeTrans(),
         T.RandomSizedRectCrop(height, width),
         T.RandomHorizontalFlip(),
         T.ToTensor(),
+
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
         normalizer,
     ])
 
