@@ -156,7 +156,7 @@ def main(args):
     evaluator = Evaluator(model, device)
 
     # add ensemble to .yaml file
-    ensemble = True
+    ensemble = False
     paths = []
     if args["training_configs"]["predict"]:
         print("Prediction:")

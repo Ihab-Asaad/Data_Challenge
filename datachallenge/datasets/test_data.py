@@ -13,8 +13,13 @@ from collections import Counter
 
 import os
 
-os.environ["KAGGLE_USERNAME"] = 'ihabasaad'
-os.environ["KAGGLE_KEY"] = '743ea9ddf4935aa2a7a41ac72b038849'
+user_name = ''
+key = ''
+if user_name =='':
+    raise KeyError("enter you kaggle account first")
+
+os.environ["KAGGLE_USERNAME"] = user_name
+os.environ["KAGGLE_KEY"] = key
 import kaggle
 from kaggle.api.kaggle_api_extended import KaggleApi
 
