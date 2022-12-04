@@ -130,8 +130,30 @@ class Evaluator(object):
         self.model = model
         self.device = device
 
-    def evaluate(self, data_loader):
-        logits, targets = get_logits_all(self.model, data_loader, device = self.device)
+    def evaluate(self, data_loader,ensemble = False, paths_ids = []):
+        if ensemble:
+            got_first = False
+            for idx, path in enumerate(paths_ids):
+                if osp.exists(path):
+                    checkpoint = load_checkpoint(paths_ids[idx])
+                else:
+                    # download from google drive:
+                    self.download(paths_ids[idx], save_to = './downloaded_model.zip')
+                    checkpoint = load_checkpoint(save_to)
+                model = checkpoint['model'].to(self.device)
+                logits, targets = get_logits_all(model, data_loader, device = self.device)
+                logits_soft = nn.Softmax(dim=1)(logits)
+                if not got_first:
+                    logits_final = logits_soft
+                    got_first = True
+                else:
+                    logits_final = logits_final+ logits_soft
+                print(logits_final.shape)
+        else:
+            logits_final, targets = get_logits_all(self.model, data_loader, device = self.device)
+        # logits = torch.argmax(logits_final, axis = 1)
+        logits = logits_final # don't take argmax if you need top k
+        # logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         confusion_matrix = conf_matrix(logits, targets)
         acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
@@ -139,25 +161,10 @@ class Evaluator(object):
         print(logits, logits.shape)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, models_names = [], paths_ids = [], ):
+    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = []):
         if ensemble:
-            # for path in paths:
-                # checkpoint = load_checkpoint(osp.join(path,'model_best.pth.tar'))
-                # model.load_state_dict(checkpoint1['state_dict'])
-                # imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
-            # model1 = models[0]
-            # model2 = models[1]
-            # model3 = models[2]
-            # checkpoint1 = load_checkpoint(osp.join(paths[0],'model_best.pth.tar'))
-            # checkpoint2 = load_checkpoint(osp.join(paths[1],'model_best.pth.tar'))
-            # checkpoint3 = load_checkpoint(osp.join(paths[2],'model_best.pth.tar'))
-            # model1.load_state_dict(checkpoint1['state_dict'])
-            # model2.load_state_dict(checkpoint2['state_dict'])
-            # model3.load_state_dict(checkpoint3['state_dict'])
             google_ids = ['11oySQ4GlDQ2mz0g1rtCGi9f1pKEgzYp3','18blmlgGkyQNrHz5kPW0tLLaeIfmFter1','1LGP6GBbC17kQcGQ3ia7o0_W2kcfqekQi']
             # resnet50, 18 ,101
-            soft = nn.Softmax(dim=1)
-            soft_list = []
             got_first = False
             for idx, path in enumerate(paths_ids):
                 if osp.exists(path):
@@ -168,7 +175,7 @@ class Evaluator(object):
                     checkpoint = load_checkpoint(save_to)
                 model = checkpoint['model'].to(self.device)
                 imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
-                logits_soft = soft(logits)
+                logits_soft = nn.Softmax(dim=1)(logits)
                 if not got_first:
                     logits_final = logits_soft
                     got_first = True
@@ -178,7 +185,6 @@ class Evaluator(object):
             logits = torch.argmax(logits_final, axis = 1)
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
-            return 
         else:
             imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
             logits_soft = nn.Softmax(dim=1)(logits)
