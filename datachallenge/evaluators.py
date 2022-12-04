@@ -135,21 +135,29 @@ class Evaluator(object):
         print(logits, logits.shape)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, models = None, paths = None):
+    def predict(self, data_loader, classes_str, ensemble = False, models_names = [], paths = [], ):
         if ensemble:
             # for path in paths:
                 # checkpoint = load_checkpoint(osp.join(path,'model_best.pth.tar'))
                 # model.load_state_dict(checkpoint1['state_dict'])
                 # imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
-            model1 = models[0]
-            model2 = models[1]
-            model3 = models[2]
-            checkpoint1 = load_checkpoint(osp.join(paths[0],'model_best.pth.tar'))
-            checkpoint2 = load_checkpoint(osp.join(paths[1],'model_best.pth.tar'))
-            checkpoint3 = load_checkpoint(osp.join(paths[2],'model_best.pth.tar'))
-            model1.load_state_dict(checkpoint1['state_dict'])
-            model2.load_state_dict(checkpoint2['state_dict'])
-            model3.load_state_dict(checkpoint3['state_dict'])
+            # model1 = models[0]
+            # model2 = models[1]
+            # model3 = models[2]
+            # checkpoint1 = load_checkpoint(osp.join(paths[0],'model_best.pth.tar'))
+            # checkpoint2 = load_checkpoint(osp.join(paths[1],'model_best.pth.tar'))
+            # checkpoint3 = load_checkpoint(osp.join(paths[2],'model_best.pth.tar'))
+            # model1.load_state_dict(checkpoint1['state_dict'])
+            # model2.load_state_dict(checkpoint2['state_dict'])
+            # model3.load_state_dict(checkpoint3['state_dict'])
+            google_ids = ['11oySQ4GlDQ2mz0g1rtCGi9f1pKEgzYp3','18blmlgGkyQNrHz5kPW0tLLaeIfmFter1','1LGP6GBbC17kQcGQ3ia7o0_W2kcfqekQi']
+            # resnet50, 18 ,101
+            for idx, model in enumerate(models):
+                if idx<len(paths):
+                    pass # use the model here
+                else:
+                    # download from google drive:
+                curr_model = self.download(google_ids[idx],models_names[idx])
             imgs_names, logits = get_logits_all_test_ensemble(model1, model2, model3, data_loader, device = self.device)
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
@@ -157,3 +165,14 @@ class Evaluator(object):
         imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
         df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
         df.to_csv('submission.csv', index=False)
+
+
+    def download(self, id, model_name):
+        file = gdown.download(id=self.id, output='./downloaded_model.zip', quiet=False )
+        # gdd.download_file_from_google_drive(file_id=self.id,
+                                    # dest_path=osp.join('./stm_data.zip'),
+                                    # unzip=False)
+        checkpoint = load_checkpoint('./downloaded_model.zip')
+        model = models.create(model_name, num_features=args["training"]["features"],
+                            dropout=args["training"]["dropout"], num_classes=num_classes).to(self.device)
+        model1.load_state_dict(checkpoint1['state_dict'])

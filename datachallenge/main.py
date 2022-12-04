@@ -156,20 +156,26 @@ def main(args):
     evaluator = Evaluator(model, device)
 
     # add ensemble to .yaml file
-    ensemble = False
+    ensemble = True
     paths = []
     if args["training_configs"]["predict"]:
         print("Prediction:")
         if ensemble:
             # you have to test the accuracy of ensemble on training dataloader before submission.
-            model1 = models.create('resnet18', num_features=args["training"]["features"],
-                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-            model2 = models.create('resnet50', num_features=args["training"]["features"],
-                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-            model3 = models.create('resnet101', num_features=args["training"]["features"],
-                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-            evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, models = [model1, model2,model3], \
-            paths = ['/content/Data_Challenge/datachallenge/logs/resnet18_aug/','/content/Data_Challenge/datachallenge/logs/resnet50__aug/','/content/Data_Challenge/datachallenge/logs/resnet101__aug/'])
+            models_names = ['resnet18', 'resnet50', 'resnet101']
+            models = []
+            for model_name in models_names:
+                models.append(models.create(model_name, num_features=args["training"]["features"],
+                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device))
+            # model1 = models.create('resnet18', num_features=args["training"]["features"],
+            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+            # model2 = models.create('resnet50', num_features=args["training"]["features"],
+            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+            # model3 = models.create('resnet101', num_features=args["training"]["features"],
+            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
+            # pass the paths of the trained models first, otherwise download from google:
+            evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True ,models_names = models_names, \
+            paths = [])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
