@@ -142,7 +142,10 @@ def main(args):
     if args["training_configs"]["resume"]:
         print("Load from saved model...")
         checkpoint = load_checkpoint(args["training_configs"]["resume"])
-        model.load_state_dict(checkpoint['state_dict'])
+        #model.load_state_dict(checkpoint['state_dict'])
+        # print("Device: ",device)
+        model = checkpoint['model'].to(device) # is to(device necessary)
+        # model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch']
         best_top1 = checkpoint['best_top1']
         print("=> Start epoch {}  best top1 {:.1%}"
@@ -162,11 +165,10 @@ def main(args):
         print("Prediction:")
         if ensemble:
             # you have to test the accuracy of ensemble on training dataloader before submission.
-            models_names = ['resnet18', 'resnet50', 'resnet101']
-            models = []
-            for model_name in models_names:
-                models.append(models.create(model_name, num_features=args["training"]["features"],
-                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device))
+            models_names = ['resnet50']
+            # for model_name in models_names:
+            #     models.append(models.create(model_name, num_features=args["training"]["features"],
+            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device))
             # model1 = models.create('resnet18', num_features=args["training"]["features"],
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # model2 = models.create('resnet50', num_features=args["training"]["features"],
@@ -174,8 +176,8 @@ def main(args):
             # model3 = models.create('resnet101', num_features=args["training"]["features"],
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
-            evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True ,models_names = models_names, \
-            paths = [])
+            evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -253,7 +255,8 @@ def main(args):
         best_top1 = max(top1, best_top1)
         save_checkpoint({
             # 'state_dict': model.module.state_dict(),
-            'state_dict': model.state_dict(),
+            # 'state_dict': model.state_dict(),
+            'model': model,
             'epoch': epoch + 1,
             'best_top1': best_top1,
         }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
@@ -265,7 +268,8 @@ def main(args):
     print('Test with best model:')
     checkpoint = load_checkpoint(osp.join(args["logging"]["logs_dir"], 'model_best.pth.tar'))
     # model.module.load_state_dict(checkpoint['state_dict'])
-    model.load_state_dict(checkpoint['state_dict'])
+    # model.load_state_dict(checkpoint['state_dict'])
+    model = torch.load(checkpoint['model'])
     # metric.train(model, train_loader)
     evaluator.evaluate(test_loader)
 

@@ -4,6 +4,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import torch
+from torch import nn
 
 from .evaluation_metrics import accuracy, prec_rec, f1, top2acc, conf_matrix
 from .utils.meters import AverageMeter
@@ -47,7 +48,8 @@ def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device(
     for i, (img, img_name) in enumerate(data_loader): # batch size here is one
         batch_time.update(time.time() - end) # the time of getting new batch
         outputs = get_logits_batch(model, img, device)
-        logits.append(np.argmax(outputs))
+        # logits.append(np.argmax(outputs))
+        logits.append(outputs)
         imgs_names.append(img_name[0])
         if (i + 1) % print_freq == 0:
             print('Get outputs: [{}/{}]\t'
@@ -56,7 +58,9 @@ def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device(
         end = time.time()
         # logits_ = torch.cat([x for x in logits], dim=0)
     print(logits)
-    logits_ = torch.IntTensor(logits)        
+    logits_ = torch.cat([x for x in logits], dim=0)
+    # logits_ = torch.FloatTensor(logits) 
+    print(logits_.shape)       
     return imgs_names, logits_
 
 def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq=1, device = torch.device('cpu')):
@@ -135,7 +139,7 @@ class Evaluator(object):
         print(logits, logits.shape)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, models_names = [], paths = [], ):
+    def predict(self, data_loader, classes_str, ensemble = False, models_names = [], paths_ids = [], ):
         if ensemble:
             # for path in paths:
                 # checkpoint = load_checkpoint(osp.join(path,'model_best.pth.tar'))
@@ -152,27 +156,36 @@ class Evaluator(object):
             # model3.load_state_dict(checkpoint3['state_dict'])
             google_ids = ['11oySQ4GlDQ2mz0g1rtCGi9f1pKEgzYp3','18blmlgGkyQNrHz5kPW0tLLaeIfmFter1','1LGP6GBbC17kQcGQ3ia7o0_W2kcfqekQi']
             # resnet50, 18 ,101
-            for idx, model in enumerate(models):
-                if idx<len(paths):
-                    pass # use the model here
+            soft = nn.Softmax(dim=1)
+            soft_list = []
+            got_first = False
+            for idx, path in enumerate(paths_ids):
+                if osp.exists(path):
+                    checkpoint = load_checkpoint(paths_ids[idx])
                 else:
                     # download from google drive:
-                curr_model = self.download(google_ids[idx],models_names[idx])
-            imgs_names, logits = get_logits_all_test_ensemble(model1, model2, model3, data_loader, device = self.device)
+                    self.download(paths_ids[idx], save_to = './downloaded_model.zip')
+                    checkpoint = load_checkpoint(save_to)
+                model = checkpoint['model'].to(self.device)
+                imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
+                logits_soft = soft(logits)
+                if not got_first:
+                    logits_final = logits_soft
+                    got_first = True
+                else:
+                    logits_final = logits_final+ logits_soft
+                print(logits_final.shape)
+            logits = torch.argmax(logits_final.sum(axis = 0))
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
             return 
-        imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
-        df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
-        df.to_csv('submission.csv', index=False)
+        else:
+            imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
+            logits_soft = nn.Softmax(dim=1)(logits)
+            logits = torch.argmax(logits_soft, axis = 1)
+            df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
+            df.to_csv('submission.csv', index=False)
 
 
-    def download(self, id, model_name):
-        file = gdown.download(id=self.id, output='./downloaded_model.zip', quiet=False )
-        # gdd.download_file_from_google_drive(file_id=self.id,
-                                    # dest_path=osp.join('./stm_data.zip'),
-                                    # unzip=False)
-        checkpoint = load_checkpoint('./downloaded_model.zip')
-        model = models.create(model_name, num_features=args["training"]["features"],
-                            dropout=args["training"]["dropout"], num_classes=num_classes).to(self.device)
-        model1.load_state_dict(checkpoint1['state_dict'])
+    def download(self, id, save_to = './downloaded_model.zip'):
+        file = gdown.download(id=id, output=save_to, quiet=False )

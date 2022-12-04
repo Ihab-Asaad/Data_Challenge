@@ -2,10 +2,13 @@ from __future__ import absolute_import
 
 from ..utils import to_torch
 from torchmetrics.classification import MulticlassF1Score
-from torchmetrics.functional import precision_recall
+from torchmetrics.classification import precision_recall
+from torchmetrics import Precision, Recall
 # from torchmetrics import Accuracy
 from torchmetrics.classification import MulticlassAccuracy
-from torchmetrics import ConfusionMatrix
+# from torchmetrics.classification import MulticlassRecall, MulticlassPrecision
+from torchmetrics.classification import MulticlassConfusionMatrix
+# from torchmetrics import ConfusionMatrix
 import torch 
 
 
@@ -14,7 +17,11 @@ def accuracy(output, target):
     return Acc(output.detach().cpu(), target.detach().cpu())
 
 def prec_rec(output, target):
-    prec_, rec_ = precision_recall(output, target, average='macro', num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/precision_recall.html
+    precision = Precision(task="multiclass", average='macro', num_classes=8)
+    prec_ = precision(output, target)
+    recall = Recall(task="multiclass", average='macro', num_classes=8)
+    rec_ = recall(output,target)
+    # prec_, rec_ = precision_recall(output, target, average='macro', num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/precision_recall.html
     return prec_, rec_
 
 def f1(output, target):
@@ -23,7 +30,8 @@ def f1(output, target):
     return f1_
 
 def conf_matrix(output, target):
-    confmat = ConfusionMatrix(num_classes=8)
+    # confmat = ConfusionMatrix(task='multiclass',num_classes=8)
+    confmat = MulticlassConfusionMatrix(task='multiclass',num_classes=8)
     return confmat(output, target)
 
 def top2acc(output, target, top = 2):

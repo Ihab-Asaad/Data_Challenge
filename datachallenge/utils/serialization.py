@@ -43,6 +43,13 @@ def load_checkpoint(fpath):
     """
     Load model from path if exist, otherwise raise an error.
     """
+    # if osp.isfile(fpath):
+    #     checkpoint = torch.load(fpath)
+    #     print("=> Loaded checkpoint '{}'".format(fpath))
+    #     return checkpoint
+    # else:
+    #     raise ValueError("=> No checkpoint found at '{}'".format(fpath))
+
     if osp.isfile(fpath):
         checkpoint = torch.load(fpath)
         print("=> Loaded checkpoint '{}'".format(fpath))
