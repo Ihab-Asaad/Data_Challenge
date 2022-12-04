@@ -20,12 +20,12 @@ net:
 
 # training
 training:
-    epochs : 100
-    batch_size: 32 #  64( for one gpu), and 256 is used with 4 gpus
+    epochs : 150
+    batch_size: 16 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
     features: 256 # number of features after base model
     dropout: 0.2
-    lr: 0.01 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
+    lr: 0.001 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
     momentum: 0.9
     weight_decay: 0.0005
     opt: SGD # not added yet
@@ -36,8 +36,8 @@ training:
 
 training_configs:
     combine_trainval: False # if True train and val sets together for training, and val set alone for validataion.
-    resume : '' # '/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
-    evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
+    resume : '' #'/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
+    evaluate : True # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
     predict: False
     start_save: 0 # start saving checkpoints after specific epoch
     seed: 1
