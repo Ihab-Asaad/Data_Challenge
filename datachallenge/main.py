@@ -186,12 +186,12 @@ def main(args):
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
         print("Validation:")
-        evaluator.evaluate(val_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
+        evaluator.evaluate(val_loader, ensemble = False, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
         print("Test:")
-        evaluator.evaluate(test_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar', '/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
-        print("Train:")
-        evaluator.evaluate(train_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar', '/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
-        # make a folder for misclassified images:
+        evaluator.evaluate(test_loader, ensemble = False, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
+        # print("Train:")
+        # evaluator.evaluate(train_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar', '/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
+        # # make a folder for misclassified images:
         return
     # Criterion: pass weights to loss function:
     repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
