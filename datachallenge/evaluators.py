@@ -175,7 +175,7 @@ class Evaluator(object):
                 else:
                     logits_final = logits_final+ logits_soft
                 print(logits_final.shape)
-            logits = torch.argmax(logits_final.sum(axis = 0))
+            logits = torch.argmax(logits_final, axis = 1)
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
             return 
