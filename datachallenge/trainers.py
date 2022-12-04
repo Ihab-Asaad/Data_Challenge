@@ -49,7 +49,7 @@ class BaseTrainer(object):
                       'Time {:.3f} ({:.3f})\t'
                       'Data {:.3f} ({:.3f})\t'
                       'Loss {:.3f} ({:.3f})\t'
-                      'Prec {:.2%} ({:.2%})\t'
+                      'Acc {:.2%} ({:.2%})\t'
                       .format(epoch, i + 1, len(data_loader),
                               batch_time.val, batch_time.avg,
                               data_time.val, data_time.avg,
@@ -81,6 +81,8 @@ class Trainer(BaseTrainer):
         if isinstance(self.criterion, torch.nn.CrossEntropyLoss):
             loss = self.criterion(outputs, targets) # check the loss device ??
             prec= accuracy(outputs, targets)
+            # prec= accuracy_micro(outputs, targets)
+            
             # prec = prec[0]
         else:
             raise ValueError("Unsupported loss:", self.criterion)

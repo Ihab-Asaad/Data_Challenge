@@ -47,7 +47,10 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        T.SomeTrans(height,width), 
+        # T.SomeTrans(height,width), 
+        T.RectScale(height, width),
+        T.ToTensor(),
+        normalizer,
         # T.RandomSizedRectCrop(height, width),
         # T.RandomHorizontalFlip(),
         # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
@@ -186,11 +189,11 @@ def main(args):
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
         print("Validation:")
-        evaluator.evaluate(val_loader, ensemble = False, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
+        evaluator.evaluate(val_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet18_final/model_best.pth.tar'])
         print("Test:")
-        evaluator.evaluate(test_loader, ensemble = False, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
-        # print("Train:")
-        # evaluator.evaluate(train_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar', '/content/Data_Challenge/datachallenge/logs/resnet18__test/model_best.pth.tar'])
+        evaluator.evaluate(test_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet18_final/model_best.pth.tar'])
+        print("Train:")
+        evaluator.evaluate(train_loader, ensemble = True, paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet18_final/model_best.pth.tar'])
         # # make a folder for misclassified images:
         return
     # Criterion: pass weights to loss function:
