@@ -36,7 +36,7 @@ training:
 
 training_configs:
     combine_trainval: False # if True train and val sets together for training, and val set alone for validataion.
-    resume : '' #'/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
+    resume : '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/resnet50__test/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
     evaluate : True # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
     predict: False
     start_save: 0 # start saving checkpoints after specific epoch

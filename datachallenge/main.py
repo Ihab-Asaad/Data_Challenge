@@ -145,9 +145,11 @@ def main(args):
     if args["training_configs"]["resume"]:
         print("Load from saved model...")
         checkpoint = load_checkpoint(args["training_configs"]["resume"])
-        #model.load_state_dict(checkpoint['state_dict'])
+        model_configs = checkpoint['configs']
+        model = models.create(**model_configs).to(self.device)
+        model.load_state_dict(checkpoint['state_dict'])
         # print("Device: ",device)
-        model = checkpoint['model'].to(device) # is to(device necessary)
+        # model = checkpoint['model'].to(device) # is to(device necessary)
         # model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch']
         best_top1 = checkpoint['best_top1']
@@ -180,9 +182,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet18_final/model_best.pth.tar', \
-                                                                       '/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar',
-                                                                       '/content/Data_Challenge/datachallenge/logs/resnet101_final/model_best.pth.tar'])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -190,15 +190,24 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet18_final/model_best.pth.tar', \
-                    '/content/Data_Challenge/datachallenge/logs/resnet34_final/model_best.pth.tar', \
-                    '/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar']
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/model_best.pth.tar']
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         # print("Test:")
         # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
         print("Train:")
         evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
+
+        configs = get_configs(args,num_classes)
+        save_checkpoint({
+            # 'state_dict': model.module.state_dict(),
+            'state_dict': model.state_dict(),
+            # 'model': model,
+            'epoch': 0,
+            'best_top1': best_top1,
+            'configs': configs,
+        }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
+
         # # make a folder for misclassified images:
         return
     # Criterion: pass weights to loss function:
@@ -261,12 +270,15 @@ def main(args):
         top1 = metrics_[3] # f1 score
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
+
+        configs = get_configs(args,num_classes)
         save_checkpoint({
             # 'state_dict': model.module.state_dict(),
-            # 'state_dict': model.state_dict(),
-            'model': model,
+            'state_dict': model.state_dict(),
+            # 'model': model,
             'epoch': epoch + 1,
             'best_top1': best_top1,
+            'configs': configs,
         }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
 
         print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
@@ -276,8 +288,8 @@ def main(args):
     print('Test with best model:')
     checkpoint = load_checkpoint(osp.join(args["logging"]["logs_dir"], 'model_best.pth.tar'))
     # model.module.load_state_dict(checkpoint['state_dict'])
-    # model.load_state_dict(checkpoint['state_dict'])
-    model = torch.load(checkpoint['model'])
+    model.load_state_dict(checkpoint['state_dict'])
+    # model = torch.load(checkpoint['model'])
     # metric.train(model, train_loader)
     evaluator.evaluate(test_loader)
 

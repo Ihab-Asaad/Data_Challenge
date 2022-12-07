@@ -68,3 +68,12 @@ if __name__=="__main__":
     model=resnet50(num_features=120,
                           dropout=0.5, num_classes=100)
     print(model)
+
+def get_configs(args, num_classes):
+    model_configs = dict()
+    model_configs["arch"] = args["net"]["arch"]
+    model_configs["num_features"] =args["training"]["features"]
+    model_configs["dropout"] = args["training"]["dropout"]
+    model_configs["num_classes"] = num_classes
+    
+    return model_configs

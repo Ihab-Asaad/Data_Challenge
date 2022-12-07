@@ -11,6 +11,7 @@ from .utils.meters import AverageMeter
 from datachallenge.utils import to_torch
 from datachallenge.utils.serialization import load_checkpoint
 import os.path as osp
+from datachallenge import models
 
 def get_logits_batch(model, inputs , device = torch.device('cpu'), modules=None):
     model.eval()
@@ -140,7 +141,12 @@ class Evaluator(object):
                     # download from google drive:
                     self.download(paths_ids[idx], save_to = './downloaded_model.zip')
                     checkpoint = load_checkpoint(save_to)
-                model = checkpoint['model'].to(self.device)
+                model = models.create("resnet50", num_features=256,
+                          dropout=0.2, num_classes=8).to(self.device)
+                model_configs = checkpoint['configs']
+                model = models.create(**model_configs).to(self.device)
+                model.load_state_dict(checkpoint['state_dict'])
+                # model = checkpoint['model'].to(self.device)
                 logits, targets = get_logits_all(model, data_loader, device = self.device)
                 logits_soft = nn.Softmax(dim=1)(logits)
                 if not got_first:
