@@ -145,6 +145,7 @@ class Evaluator(object):
                           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
                 model = models.create(**model_configs).to(self.device)
+                # model = self.model
                 model.load_state_dict(checkpoint['state_dict'])
                 # model = checkpoint['model'].to(self.device)
                 logits, targets = get_logits_all(model, data_loader, device = self.device)

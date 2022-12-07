@@ -71,7 +71,7 @@ if __name__=="__main__":
 
 def get_configs(args, num_classes):
     model_configs = dict()
-    model_configs["arch"] = args["net"]["arch"]
+    model_configs["name"] = args["net"]["arch"]
     model_configs["num_features"] =args["training"]["features"]
     model_configs["dropout"] = args["training"]["dropout"]
     model_configs["num_classes"] = num_classes

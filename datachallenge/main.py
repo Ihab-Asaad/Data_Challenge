@@ -182,7 +182,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/model_best.pth.tar'])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -190,7 +190,7 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/model_best.pth.tar']
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar']
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         # print("Test:")
@@ -198,15 +198,15 @@ def main(args):
         print("Train:")
         evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
-        configs = get_configs(args,num_classes)
-        save_checkpoint({
-            # 'state_dict': model.module.state_dict(),
-            'state_dict': model.state_dict(),
-            # 'model': model,
-            'epoch': 0,
-            'best_top1': best_top1,
-            'configs': configs,
-        }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
+        # configs = models.get_configs(args,num_classes)
+        # save_checkpoint({
+        #     # 'state_dict': model.module.state_dict(),
+        #     'state_dict': model.state_dict(),
+        #     # 'model': model,
+        #     'epoch': 0,
+        #     'best_top1': 0.95,
+        #     'configs': configs,
+        # }, True, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
 
         # # make a folder for misclassified images:
         return
