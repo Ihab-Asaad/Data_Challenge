@@ -141,8 +141,8 @@ class Evaluator(object):
                     # download from google drive:
                     self.download(paths_ids[idx], save_to = './downloaded_model.zip')
                     checkpoint = load_checkpoint(save_to)
-                model = models.create("resnet50", num_features=256,
-                          dropout=0.2, num_classes=8).to(self.device)
+                # model = models.create("resnet50", num_features=256,
+                #           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
                 model = models.create(**model_configs).to(self.device)
                 # model = self.model
@@ -162,10 +162,10 @@ class Evaluator(object):
         logits = logits_final # don't take argmax if you need top k
         # logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         confusion_matrix = conf_matrix(logits, targets)
+        print(logits, logits.shape)
         acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
         print("Confusion_matrix: \n", confusion_matrix)
-        print(logits, logits.shape)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
     def predict(self, data_loader, classes_str, ensemble = False, paths_ids = []):
@@ -180,7 +180,12 @@ class Evaluator(object):
                     # download from google drive:
                     self.download(paths_ids[idx], save_to = './downloaded_model.zip')
                     checkpoint = load_checkpoint(save_to)
-                model = checkpoint['model'].to(self.device)
+                model_configs = checkpoint['configs']
+                model = models.create(**model_configs).to(self.device)
+                # model = self.model
+                model.load_state_dict(checkpoint['state_dict'])
+
+                # model = checkpoint['model'].to(self.device)
                 imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
                 logits_soft = nn.Softmax(dim=1)(logits)
                 if not got_first:

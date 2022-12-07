@@ -47,10 +47,10 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        # T.SomeTrans(height,width), 
-        T.RectScale(height, width),
-        T.ToTensor(),
-        normalizer,
+        T.SomeTrans(height,width), 
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
         # T.RandomSizedRectCrop(height, width),
         # T.RandomHorizontalFlip(),
         # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
@@ -141,12 +141,13 @@ def main(args):
     # print(model)
 
     # Load from checkpoint: 
+    # print learning rate while training to check if resuming take the currect lr
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
         print("Load from saved model...")
         checkpoint = load_checkpoint(args["training_configs"]["resume"])
         model_configs = checkpoint['configs']
-        model = models.create(**model_configs).to(self.device)
+        model = models.create(**model_configs).to(device)
         model.load_state_dict(checkpoint['state_dict'])
         # print("Device: ",device)
         # model = checkpoint['model'].to(device) # is to(device necessary)
@@ -182,7 +183,9 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar'])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar', \
+                        '/content/Data_Challenge/datachallenge/logs/eff3_final/model_best.pth.tar', \
+                        '/content/Data_Challenge/datachallenge/logs/eff7_final/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -190,12 +193,14 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar']
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar', \
+                        '/content/Data_Challenge/datachallenge/logs/eff3_final/model_best.pth.tar', \
+                        '/content/Data_Challenge/datachallenge/logs/eff7_final/model_best.pth.tar']
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
-        # print("Test:")
-        # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
-        print("Train:")
+        print("Test:")
+        evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
+        print("Train:") # why evaluating on training give too bad result
         evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
         # configs = models.get_configs(args,num_classes)
@@ -271,7 +276,7 @@ def main(args):
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
 
-        configs = get_configs(args,num_classes)
+        configs = models.get_configs(args,num_classes)
         save_checkpoint({
             # 'state_dict': model.module.state_dict(),
             'state_dict': model.state_dict(),
