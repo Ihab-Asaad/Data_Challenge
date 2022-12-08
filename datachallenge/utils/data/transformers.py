@@ -65,18 +65,18 @@ class SomeTrans():
                 albu.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=30, interpolation=1, border_mode=0, value=0, p=0.25),
                 albu.HorizontalFlip(p=0.5),
                 albu.VerticalFlip(p=0.5),
-                albu.OneOf([
-                    albu.MotionBlur(p=.2),
-                    albu.MedianBlur(blur_limit=3, p=0.1),
-                    albu.Blur(blur_limit=3, p=0.1),
-                ], p=0.25),
+                # albu.OneOf([
+                #     albu.MotionBlur(p=.2),
+                #     albu.MedianBlur(blur_limit=3, p=0.1),
+                #     albu.Blur(blur_limit=3, p=0.1),
+                # ], p=0.25),
                 # albu.OneOf([
                 #     albu.CLAHE(clip_limit=2),
                 #     albu.IAASharpen(),
                 #     albu.IAAEmboss(),
                 #     albu.RandomBrightnessContrast(),            
                 # ], p=0.25),
-                albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
+                # albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
                 albu.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
                 ToTensorV2(),
             ])

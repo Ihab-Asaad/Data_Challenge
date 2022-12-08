@@ -48,9 +48,9 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
         T.SomeTrans(height,width), 
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
+        #T.RectScale(height, width),
+        #T.ToTensor(),
+        #normalizer,
         # T.RandomSizedRectCrop(height, width),
         # T.RandomHorizontalFlip(),
         # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
@@ -71,6 +71,8 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
 
     # https://pytorch.org/docs/master/data.html#torch.utils.data.sampler.WeightedRandomSampler
     # https://stackoverflow.com/questions/67535660/how-to-construct-batch-that-return-equal-number-of-images-for-per-classes
+
+    # https://discuss.pytorch.org/t/load-the-same-number-of-data-per-class/65198/3
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=dataset.images_dir,
@@ -183,9 +185,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar', \
-                        '/content/Data_Challenge/datachallenge/logs/eff3_final/model_best.pth.tar', \
-                        '/content/Data_Challenge/datachallenge/logs/eff7_final/model_best.pth.tar'])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/res34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/eff5_final/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -193,15 +193,13 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/resnet50_final/model_best.pth.tar', \
-                        '/content/Data_Challenge/datachallenge/logs/eff3_final/model_best.pth.tar', \
-                        '/content/Data_Challenge/datachallenge/logs/eff7_final/model_best.pth.tar']
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/res34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/eff5_final/model_best.pth.tar']
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
         evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
-        print("Train:") # why evaluating on training give too bad result
-        evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
+        # print("Train:") #
+        # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
         # configs = models.get_configs(args,num_classes)
         # save_checkpoint({
