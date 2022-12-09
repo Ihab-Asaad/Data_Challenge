@@ -12,6 +12,7 @@ from datachallenge.utils import to_torch
 from datachallenge.utils.serialization import load_checkpoint
 import os.path as osp
 from datachallenge import models
+import gdown
 
 def get_logits_batch(model, inputs , device = torch.device('cpu'), modules=None):
     model.eval()
@@ -139,8 +140,9 @@ class Evaluator(object):
                     checkpoint = load_checkpoint(paths_ids[idx])
                 else:
                     # download from google drive:
-                    self.download(paths_ids[idx], save_to = './downloaded_model.zip')
-                    checkpoint = load_checkpoint(save_to)
+                    # 
+                    self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                    checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
                 # model = models.create("resnet50", num_features=256,
                 #           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
@@ -170,15 +172,14 @@ class Evaluator(object):
 
     def predict(self, data_loader, classes_str, ensemble = False, paths_ids = []):
         if ensemble:
-            google_ids = ['11oySQ4GlDQ2mz0g1rtCGi9f1pKEgzYp3','18blmlgGkyQNrHz5kPW0tLLaeIfmFter1','1LGP6GBbC17kQcGQ3ia7o0_W2kcfqekQi']
-            # resnet50, 18 ,101
             got_first = False
             for idx, path in enumerate(paths_ids):
                 if osp.exists(path):
                     checkpoint = load_checkpoint(paths_ids[idx])
                 else:
                     # download from google drive:
-                    self.download(paths_ids[idx], save_to = './downloaded_model.zip')
+                    print("Helllllllllllllllllllllllllllllllllllllllo")
+                    self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
                     checkpoint = load_checkpoint(save_to)
                 model_configs = checkpoint['configs']
                 model = models.create(**model_configs).to(self.device)
@@ -206,4 +207,5 @@ class Evaluator(object):
 
 
     def download(self, id, save_to = './downloaded_model.zip'):
+        
         file = gdown.download(id=id, output=save_to, quiet=False )

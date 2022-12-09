@@ -193,11 +193,11 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/res34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/eff5_final/model_best.pth.tar']
-        # print("Validation:")
-        # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
-        print("Test:")
-        evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
+        paths_ids = ["1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
+        print("Validation:")
+        evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
+        # print("Test:")
+        # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
         # print("Train:") #
         # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
