@@ -202,7 +202,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/eff5_b_uw_final/model_best.pth.tar'])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/eff5_b_uw_final/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -213,8 +213,8 @@ def main(args):
         paths_ids = ['/content/Data_Challenge/datachallenge/logs/eff5_b_uw_final/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
         print("Validation:")
         evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
-        # print("Test:")
-        # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
+        print("Test:")
+        evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
         # print("Train:") #
         # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 

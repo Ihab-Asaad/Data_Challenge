@@ -13,25 +13,27 @@ import torch
 
 
 def accuracy(output, target):
-    Acc = MulticlassAccuracy(num_classes = 8, average='macro')
+    # Acc = MulticlassAccuracy(num_classes = 8, average='macro')
+    Acc = MulticlassAccuracy(num_classes = 8, average='micro')
     return Acc(output.detach().cpu(), target.detach().cpu())
 
 def accuracy_micro(output, target):
-    Acc = MulticlassAccuracy(num_classes = 8, average='macro')
+    # Acc = MulticlassAccuracy(num_classes = 8, average='macro')
+    Acc = MulticlassAccuracy(num_classes = 8, average='micro')
     return Acc(output.detach().cpu(), target.detach().cpu())
 
 def prec_rec(output, target):
     # precision = Precision(task="multiclass", average='macro', num_classes=8)
-    precision = Precision(task="multiclass", average='macro', num_classes=8)
+    precision = Precision(task="multiclass", num_classes=8)
     prec_ = precision(output, target)
     # recall = Recall(task="multiclass", average='macro', num_classes=8)
-    recall = Recall(task="multiclass", average='macro', num_classes=8)
+    recall = Recall(task="multiclass", num_classes=8)
     rec_ = recall(output,target)
     # prec_, rec_ = precision_recall(output, target, average='macro', num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/precision_recall.html
     return prec_, rec_
 
 def f1(output, target):
-    metric = MulticlassF1Score(num_classes=8, average = 'macro') # https://torchmetrics.readthedocs.io/en/stable/classification/f1_score.html
+    metric = MulticlassF1Score(num_classes=8) # https://torchmetrics.readthedocs.io/en/stable/classification/f1_score.html
     f1_ = metric(output, target)
     return f1_
 
