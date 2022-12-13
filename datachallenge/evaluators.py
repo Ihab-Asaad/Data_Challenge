@@ -180,7 +180,7 @@ class Evaluator(object):
                     # download from google drive:
                     print("Helllllllllllllllllllllllllllllllllllllllo")
                     self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
-                    checkpoint = load_checkpoint(save_to)
+                    checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
                 model_configs = checkpoint['configs']
                 model = models.create(**model_configs).to(self.device)
                 # model = self.model
