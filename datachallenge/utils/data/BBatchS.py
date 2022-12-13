@@ -133,7 +133,7 @@ if __name__=="__main__":
     labels = torch.LongTensor(labels_list)
     print(labels.shape)
     print("here1")
-    balanced_batch_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = len(labels))
+    balanced_batch_sampler = samplers.MPerClassSampler(labels,2 , length_before_new_iter = len(labels))
     print("here2")
     dataloader = torch.utils.data.DataLoader(mnist_train, sampler=balanced_batch_sampler, batch_size = 30)
     my_testiter = iter(dataloader)

@@ -22,6 +22,8 @@ from datachallenge.utils.data import transformers as T
 from datachallenge.utils.data.preprocessor import Preprocessor
 from datachallenge.utils.logging import Logger  
 from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
+from pytorch_metric_learning import samplers
+
 
 
 def get_data(name, val_split, test_split, data_dir, height, width, batch_size, workers, combine_trainval):
@@ -73,12 +75,27 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     # https://stackoverflow.com/questions/67535660/how-to-construct-batch-that-return-equal-number-of-images-for-per-classes
 
     # https://discuss.pytorch.org/t/load-the-same-number-of-data-per-class/65198/3
+    # train_loader = DataLoader(
+    #     # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
+    #     Preprocessor(train_set, root=dataset.images_dir,
+    #                  transform=train_transformer),
+    #     batch_size=batch_size, num_workers=workers,
+    #     shuffle=True, 
+    #     pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
+    #     drop_last=True) 
+    loader = DataLoader(Preprocessor(train_set, root=dataset.images_dir,transform=train_transformer))
+    labels_list = []
+    for _, label in loader:
+        labels_list.append(label)
+    labels = torch.LongTensor(labels_list)
+    balanced_sampler = samplers.MPerClassSampler(labels, 1, length_before_new_iter = len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=dataset.images_dir,
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
-        shuffle=True, 
+        # shuffle=True,
+        sampler=balanced_sampler, 
         pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         drop_last=True) 
 

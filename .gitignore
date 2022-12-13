@@ -14,3 +14,4 @@ datachallenge/logs/
 *.csv
 *.tar
 logs/checkpoint.pth.tar
+datachallenge/utils/data/mnist/

@@ -10,3 +10,4 @@ opendatasets
 kaggle
 albumentations==1.0.0
 timm==0.4.5
+pytorch_metric_learning
