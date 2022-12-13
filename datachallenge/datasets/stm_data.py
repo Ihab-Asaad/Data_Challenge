@@ -80,7 +80,7 @@ class STM_DATA():
 
     def split(self):
         X,y = self.X, self.y
-        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=42)
+        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
         X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
         # Save meta information into a json file
         splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,

@@ -29,7 +29,7 @@ from pytorch_metric_learning import samplers
 def get_data(name, val_split, test_split, data_dir, height, width, batch_size, workers, combine_trainval):
     
     extract_to = osp.join(data_dir, name) 
-
+    # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
     dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
 
@@ -202,7 +202,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/res34_final/model_best.pth.tar','/content/Data_Challenge/datachallenge/logs/eff5_final/model_best.pth.tar'])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/eff5_b_final/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -235,7 +235,8 @@ def main(args):
     print(repeat)
     torch_repeat = torch.Tensor(repeat)
     class_weights = sum(torch_repeat)/torch_repeat
-    criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
+    # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
+    criterion = nn.CrossEntropyLoss().cuda() 
 
     # Optimizer
     # if hasattr(model.module, 'base'):
@@ -287,7 +288,7 @@ def main(args):
         if epoch < args["training_configs"]["start_save"]:
             continue
         metrics_ = evaluator.evaluate(val_loader)
-        top1 = metrics_[3] # f1 score
+        top1 = metrics_[0] # acc macro
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
 
