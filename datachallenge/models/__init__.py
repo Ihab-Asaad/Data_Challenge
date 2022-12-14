@@ -4,6 +4,7 @@ from datachallenge.models.inception import *
 from datachallenge.models.resnet import *
 from datachallenge.models.efficient import *
 from datachallenge.models.cusnet import CusNet
+from datachallenge.models.vit import *
 
 
 __factory = {
@@ -22,7 +23,8 @@ __factory = {
     'efficientnet_b5': efficientnet_b5,
     'efficientnet_b6': efficientnet_b6,
     'efficientnet_b7': efficientnet_b7,
-    'cusnet':CusNet
+    'cusnet':CusNet,
+    'vit':VisionTransformer
 }
 
 

@@ -274,7 +274,8 @@ def main(args):
     trainer = Trainer(model, criterion, device)
 
     # print lr with metrics:
-    # Schedule learning rate, see automation functions:
+    # Schedule learning rate, see automation functions in torch, see also:
+    # https://www.kaggle.com/code/isbhargav/guide-to-pytorch-learning-rate-scheduling/notebook
     def adjust_lr(epoch):
         step_size = 60 if args["net"]["arch"] == 'inception' else 40
         lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
