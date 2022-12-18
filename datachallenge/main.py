@@ -26,17 +26,21 @@ from pytorch_metric_learning import samplers
 
 
 
-def get_data(name, val_split, test_split, data_dir, height, width, batch_size, workers, combine_trainval):
+def get_data(name, cross_val , val_split, test_split, data_dir, combine_trainval):
     
     extract_to = osp.join(data_dir, name) 
     # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
-    dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
+    dataset = datasets.create(name, extract_to, cross_val, val_split= val_split, test_split= test_split, download = True)
 
     # create test dataset, this is the unlabeled data to be submitted:
     dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
 
-    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
+    return dataset, dataset_test, dataset.num_classes
+
+
+def dataset_dataloader(dataset, dataset_test , height, width, batch_size, workers, combine_trainval):
+        # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
@@ -114,8 +118,8 @@ def get_data(name, val_split, test_split, data_dir, height, width, batch_size, w
     test_submit_loader = DataLoader(
         Preprocessor(test_set_submit, root = dataset_test.images_dir, transform=test_submit_transformer),
         batch_size = 1, num_workers=workers, shuffle=False, pin_memory=True)
-
-    return dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader
+    
+    return train_loader, val_loader, test_loader, test_submit_loader
 
 def seed_all(seed):
   random.seed(seed)
@@ -143,10 +147,15 @@ def main(args):
     if height is None or width is None:
         height, width = (224, 224) 
 
-    dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader = \
-        get_data(args["dataset"]["name"], args["training_configs"]["val_split"], \
-        args["training_configs"]["test_split"], args["logging"]["data_dir"], height, width, \
-        args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
+    # dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader = \
+    #     get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["val_split"], \
+    #     args["training_configs"]["test_split"], args["logging"]["data_dir"], height, width, \
+    #     args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
+
+    dataset, dataset_test, num_classes = \
+        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["val_split"], \
+        args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
+    train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
     
     # Create model
@@ -202,7 +211,9 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/eff5_b_uw_final/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"])
+            paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
+                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
+                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -210,7 +221,9 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/eff5_b_uw_final/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
+        paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
+                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
+                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
         print("Validation:")
         evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")

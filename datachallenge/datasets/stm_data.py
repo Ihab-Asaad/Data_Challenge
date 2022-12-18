@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 
 class STM_DATA():
-    def __init__(self, extract_to=None, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
+    def __init__(self, extract_to=None, cross_val = False, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
         if google_id == None:
             google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU&confirm=t"
         self.id = google_id
@@ -27,7 +27,7 @@ class STM_DATA():
             self.download()
 
         self.scan()
-        self.split()
+        self.split(cross_val)
         if not self._check_integrity():
             raise RuntimeError("Dataset not found or corrupted. " +
                                "You can use download=True to download it.")
@@ -78,25 +78,28 @@ class STM_DATA():
                 'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
         write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
-    def split(self):
-        X,y = self.X, self.y
-        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
-        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
-        # Save meta information into a json file
-        splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
-                'X_test': X_test,'y_test': y_test}
-        write_json(splits, osp.join(self.extract_to, 'splits.json'))
+    def split(self, cross_val = False):
+        if cross_val:
+            pass
+        else: 
+            X,y = self.X, self.y
+            X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
+            X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
+            # Save meta information into a json file
+            splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
+                    'X_test': X_test,'y_test': y_test}
+            write_json(splits, osp.join(self.extract_to, 'splits.json'))
 
-        self.X_trainval= X_train_val
-        self.y_trainval = y_train_val
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_val = X_val
-        self.y_val = y_val
-        self.X_test = X_test
-        self.y_test = y_test
-        self.weights_trainval = list(Counter(y_train_val).values())
-        self.weights_train = list(Counter(y_train).values())
+            self.X_trainval= X_train_val
+            self.y_trainval = y_train_val
+            self.X_train = X_train
+            self.y_train = y_train
+            self.X_val = X_val
+            self.y_val = y_val
+            self.X_test = X_test
+            self.y_test = y_test
+            self.weights_trainval = list(Counter(y_train_val).values())
+            self.weights_train = list(Counter(y_train).values())
     def summary(self, verbose = True):
         if verbose:
             print(self.__class__.__name__, "dataset loaded")

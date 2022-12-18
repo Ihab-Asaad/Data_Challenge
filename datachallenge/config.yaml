@@ -10,17 +10,18 @@ dataset:
     extract_to: ''
 
 net: 
-    arch : 'vit' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
+    arch : 'resnet18' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
     # 'inception': from scratch, not added yet
     # 'efficientnet', 'efficientnet_b0','efficientnet_b1','efficientnet_b2','efficientnet_b3','efficientnet_b4','efficientnet_b5','efficientnet_b6','efficientnet_b7'
     # 'cusnet'
+    # 'vit' vision transformers:
     # Check the data images sizes ??? important
     height : 224 # 256 # 144 for inception
     width : 224 # 128 # 56 for inception
 
 # training
 training:
-    epochs : 150
+    epochs : 5
     batch_size: 16 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
     features: 256 # number of features after base model
@@ -35,6 +36,7 @@ training:
     margin: 0.5 # for triplet loss
 
 training_configs:
+    cv: False # cross validation
     combine_trainval: False # if True train and val sets together for training, and val set alone for validataion.
     resume : '' # '/content/Data_Challenge/datachallenge/logs/eff5_b_uw_final/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
     evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
@@ -53,4 +55,4 @@ metric_learning:
 logging:
     working_dir: '/content/Data_Challenge/datachallenge'
     data_dir: '/content/Data_Challenge/datachallenge/datasets/dataset' # + dataset_name : where to store downloaded data
-    logs_dir: '/content/Data_Challenge/datachallenge/logs/vit' # where to save training and testing logs
+    logs_dir: '/content/Data_Challenge/datachallenge/logs/test' # where to save training and testing logs
