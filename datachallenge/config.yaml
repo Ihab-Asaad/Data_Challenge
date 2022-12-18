@@ -16,13 +16,13 @@ net:
     # 'cusnet'
     # 'vit' vision transformers:
     # Check the data images sizes ??? important
-    height : 224 # 256 # 144 for inception
-    width : 224 # 128 # 56 for inception
+    height : 336 # 256 # 144 for inception
+    width : 336 # 128 # 56 for inception
 
 # training
 training:
-    epochs : 5
-    batch_size: 16 #  64( for one gpu), and 256 is used with 4 gpus
+    epochs : 20
+    batch_size: 32 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
     features: 256 # number of features after base model
     dropout: 0.2

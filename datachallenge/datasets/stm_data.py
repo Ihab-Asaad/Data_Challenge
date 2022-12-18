@@ -79,8 +79,14 @@ class STM_DATA():
         write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
     def split(self, cross_val = False):
+        
         if cross_val:
-            pass
+            X,y = self.X, self.y
+            X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
+            X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
+            kf = KFold(n_splits=3, random_state=42, shuffle=True)
+            for i, (train_index, test_index) in enumerate(kf.split(X)):
+                pass
         else: 
             X,y = self.X, self.y
             X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
