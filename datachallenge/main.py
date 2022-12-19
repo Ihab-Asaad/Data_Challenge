@@ -23,6 +23,7 @@ from datachallenge.utils.data.preprocessor import Preprocessor
 from datachallenge.utils.logging import Logger  
 from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 from pytorch_metric_learning import samplers
+from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 
 
 
@@ -249,7 +250,11 @@ def main(args):
     torch_repeat = torch.Tensor(repeat)
     class_weights = sum(torch_repeat)/torch_repeat
     # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
-    criterion = nn.CrossEntropyLoss().cuda() 
+    custom_loss = True # make it in .yaml
+    if custom_loss:
+        criterion = CustomCrossEntropyLoss(device = device).cuda()
+    else:
+        criterion = nn.CrossEntropyLoss().cuda() 
 
     # Optimizer
     # if hasattr(model.module, 'base'):
@@ -284,7 +289,6 @@ def main(args):
     #                             weight_decay=args["training"]["weight_decay"])
 
     # Trainer
-    custom_loss = True # make it in .yaml
     trainer = Trainer(model, criterion, device, custom_loss)
 
     # print lr with metrics:
