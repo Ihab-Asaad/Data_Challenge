@@ -9,11 +9,12 @@ from datachallenge.utils.meters import AverageMeter
 
 
 class BaseTrainer(object):
-    def __init__(self, model, criterion, device):
+    def __init__(self, model, criterion, device, custom_loss):
         super(BaseTrainer, self).__init__()
         self.model = model
         self.criterion = criterion
         self.device = device
+        self.customloss = custom_loss
 
     def train(self, epoch, data_loader, optimizer, print_freq=1):
         self.model.train()
@@ -78,12 +79,16 @@ class Trainer(BaseTrainer):
         # outputs = self.model(*inputs)
 
         outputs = self.model(inputs)
-        if isinstance(self.criterion, torch.nn.CrossEntropyLoss):
+        if isinstance(self.criterion, torch.nn.CrossEntropyLoss) and not self.customloss:
             loss = self.criterion(outputs, targets) # check the loss device ??
             prec= accuracy(outputs, targets)
             # prec= accuracy_micro(outputs, targets)
             
             # prec = prec[0]
         else:
-            raise ValueError("Unsupported loss:", self.criterion)
+            if self.customloss:
+                loss = self.criterion(outputs, targets, inputs) # check the loss device ??
+                prec= accuracy(outputs, targets)
+            else:
+                raise ValueError("Unsupported loss:", self.criterion)
         return loss, prec

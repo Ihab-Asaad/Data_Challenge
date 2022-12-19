@@ -284,7 +284,8 @@ def main(args):
     #                             weight_decay=args["training"]["weight_decay"])
 
     # Trainer
-    trainer = Trainer(model, criterion, device)
+    custom_loss = True # make it in .yaml
+    trainer = Trainer(model, criterion, device, custom_loss)
 
     # print lr with metrics:
     # Schedule learning rate, see automation functions in torch, see also:
