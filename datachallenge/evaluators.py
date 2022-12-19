@@ -157,7 +157,6 @@ class Evaluator(object):
                     got_first = True
                 else:
                     logits_final = logits_final+ logits_soft
-                print(logits_final.shape)
         else:
             logits_final, targets = get_logits_all(self.model, data_loader, device = self.device)
         # logits = torch.argmax(logits_final, axis = 1)
@@ -207,5 +206,4 @@ class Evaluator(object):
 
 
     def download(self, id, save_to = './downloaded_model.zip'):
-        
         file = gdown.download(id=id, output=save_to, quiet=False )

@@ -42,6 +42,8 @@ class CustomCrossEntropyLoss(nn.CrossEntropyLoss):
         # return loss.mean() # return .mean() as the reduction above is none (to resemble the default init of Crossentropyloss)
         loss = (loss * sample_weight / sample_weight.sum()).sum() # normalize: https://discuss.pytorch.org/t/per-class-and-per-sample-weighting/25530/8
         # loss = (loss * sample_weight).mean()
+        # loss = (loss * sample_weight).sum()
+
         
         return loss
         # return F.cross_entropy(input, target, weight=sample_weight,

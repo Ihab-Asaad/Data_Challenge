@@ -93,7 +93,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     for _, label in loader:
         labels_list.append(label)
     labels = torch.LongTensor(labels_list)
-    balanced_sampler = samplers.MPerClassSampler(labels, 1, length_before_new_iter = len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
+    balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=dataset.images_dir,
@@ -212,9 +212,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
-                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
-                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
