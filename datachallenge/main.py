@@ -222,9 +222,10 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
-                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
-                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
+        # paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
+        #                 "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
+        #                 "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
         print("Validation:")
         evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
