@@ -146,6 +146,10 @@ class Evaluator(object):
                 # model = models.create("resnet50", num_features=256,
                 #           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
+                print(model_configs)
+                # model_configs["name"] = "efficientnet_b5"
+                # raise Exception
+                # return
                 model = models.create(**model_configs).to(self.device)
                 # model = self.model
                 model.load_state_dict(checkpoint['state_dict'])
@@ -181,6 +185,7 @@ class Evaluator(object):
                     self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
                     checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
                 model_configs = checkpoint['configs']
+                # model_configs["name"] = "efficientnet_b5"
                 model = models.create(**model_configs).to(self.device)
                 # model = self.model
                 model.load_state_dict(checkpoint['state_dict'])

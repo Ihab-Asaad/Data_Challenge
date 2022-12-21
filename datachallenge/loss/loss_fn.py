@@ -34,7 +34,7 @@ class CustomCrossEntropyLoss(nn.CrossEntropyLoss):
         # weights = # get the images and take the model(imgs) and then softamx as weights
         logits = self.model2weights(imgs)
         logits_soft = nn.Softmax(dim=1)(logits).data
-        sample_weight = torch.Tensor([1.0 - logits_soft[i][target[i]] for i in range(target.size(0))]).to(self.device)
+        sample_weight = torch.Tensor([(1.0 - logits_soft[i][target[i]])**2 for i in range(target.size(0))]).to(self.device)
         # print(input_weights)
         # print("Targets: ")
         # print(target)

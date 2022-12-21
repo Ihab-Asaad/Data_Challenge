@@ -24,6 +24,7 @@ from datachallenge.utils.logging import Logger
 from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 from pytorch_metric_learning import samplers
 from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
+import gdown
 
 
 
@@ -46,6 +47,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
                              std=[0.229, 0.224, 0.225])
 
     # get the data portions, to pass them later to datalaoders:
+    print("combine_trainval: ",combine_trainval)
     train_set = (dataset.X_trainval, dataset.y_trainval) if combine_trainval else (dataset.X_train, dataset.y_train)
     val_set = (dataset.X_val, dataset.y_val)
     test_set = (dataset.X_test, dataset.y_test)
@@ -54,10 +56,10 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        T.SomeTrans(height,width), 
-        #T.RectScale(height, width),
-        #T.ToTensor(),
-        #normalizer,
+        # T.SomeTrans(height,width), 
+        T.RectScale(height, width),
+        T.ToTensor(),
+        normalizer,
         # T.RandomSizedRectCrop(height, width),
         # T.RandomHorizontalFlip(),
         # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
@@ -93,14 +95,16 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     for _, label in loader:
         labels_list.append(label)
     labels = torch.LongTensor(labels_list)
-    balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
+    #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
+    # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=dataset.images_dir,
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
         # shuffle=True,
-        sampler=balanced_sampler, 
+        shuffle = False,
+        # sampler=balanced_sampler, 
         pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         drop_last=True) 
 
@@ -174,10 +178,23 @@ def main(args):
     start_epoch = best_top1 = 0
     if args["training_configs"]["resume"]:
         print("Load from saved model...")
-        checkpoint = load_checkpoint(args["training_configs"]["resume"])
+        if osp.exists(args["training_configs"]["resume"]):
+            checkpoint = load_checkpoint(args["training_configs"]["resume"])
+        else:
+        # download from google drive:
+        # 
+            file = gdown.download(id=args["training_configs"]["resume"], output='/content/Data_Challenge/datachallenge/downloaded_model.tar', quiet=False )
+            checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
+        # model = models.create("resnet50", num_features=256,
+        #           dropout=0.2, num_classes=8).to(self.device)
         model_configs = checkpoint['configs']
         model = models.create(**model_configs).to(device)
+        # model = self.model
         model.load_state_dict(checkpoint['state_dict'])
+        # checkpoint = load_checkpoint(args["training_configs"]["resume"])
+        # model_configs = checkpoint['configs']
+        # model = models.create(**model_configs).to(device)
+        # model.load_state_dict(checkpoint['state_dict'])
         # print("Device: ",device)
         # model = checkpoint['model'].to(device) # is to(device necessary)
         # model.load_state_dict(checkpoint['model'])
@@ -212,7 +229,7 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"])
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/model_best.pth.tar'])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -223,13 +240,13 @@ def main(args):
         # paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
         #                 "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
         #                 "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/model_best.pth.tar',"1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar']
         print("Validation:")
         evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
         evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
-        # print("Train:") #
-        # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
+        print("Train:") #
+        evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
         # configs = models.get_configs(args,num_classes)
         # save_checkpoint({
@@ -249,7 +266,7 @@ def main(args):
     torch_repeat = torch.Tensor(repeat)
     class_weights = sum(torch_repeat)/torch_repeat
     # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
-    custom_loss = True # make it in .yaml
+    custom_loss = False # make it in .yaml
     if custom_loss:
         criterion = CustomCrossEntropyLoss(device = device).cuda()
     else:
