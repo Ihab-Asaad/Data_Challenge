@@ -25,6 +25,7 @@ from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 from pytorch_metric_learning import samplers
 from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 import gdown
+import netron
 
 
 
@@ -172,6 +173,8 @@ def main(args):
     trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
     # print(model)
+    model.save('model.h5')
+    netron.start('model.h5')
 
     # Load from checkpoint: 
     # print learning rate while training to check if resuming take the currect lr
@@ -229,7 +232,10 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/model_best.pth.tar'])
+            paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
+                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
+                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t",\
+                        "1hf9jjHIBJ7pO5sUb8qqxV5uu5GUCn0Zm&confirm=t"])
             return
         else:
             evaluator.predict(test_submit_loader, dataset.classes_str)
@@ -237,10 +243,11 @@ def main(args):
 
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        # paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
-        #                 "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
-        #                 "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t"]
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar']
+        paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
+                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
+                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t",\
+                        "1hf9jjHIBJ7pO5sUb8qqxV5uu5GUCn0Zm&confirm=t"] # this is eff_5_adaboost
+        # paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar']
         print("Validation:")
         evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
