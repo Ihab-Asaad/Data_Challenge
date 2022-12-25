@@ -42,7 +42,7 @@ def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combi
 
 
 def dataset_dataloader(dataset, dataset_test , height, width, batch_size, workers, combine_trainval):
-        # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
+    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
 
@@ -52,7 +52,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     val_set = (dataset.X_val, dataset.y_val)
     test_set = (dataset.X_test, dataset.y_test)
     test_set_submit = (dataset_test.X)
-    num_classes = dataset.num_classes
+    # num_classes = dataset.num_classes
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
@@ -127,6 +127,92 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
         batch_size = 1, num_workers=workers, shuffle=False, pin_memory=True)
     
     return train_loader, val_loader, test_loader, test_submit_loader
+
+
+def test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir, images_dir_test , height, width, batch_size, workers, combine_trainval):
+        # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
+    normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    test_set = (X_test, y_test)
+    test_set_submit = (X_test_submit)
+
+    test_transformer = T.Compose([
+        T.test_tranforms(height, width),
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
+    ])
+
+    test_submit_transformer = T.Compose([
+        T.test_tranforms(height, width),
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
+    ])
+
+    test_loader = DataLoader(
+        Preprocessor(test_set, root=images_dir, transform=test_transformer),
+        batch_size=batch_size, num_workers=workers,
+        shuffle=False, pin_memory=True)
+
+    test_submit_loader = DataLoader(
+        Preprocessor(test_set_submit, root = images_dir_test, transform=test_submit_transformer),
+        batch_size = 1, num_workers=workers, shuffle=False, pin_memory=True)
+    
+    return test_loader, test_submit_loader
+
+def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, width, batch_size, workers):
+    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
+    normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
+                             std=[0.229, 0.224, 0.225])
+    # get the data portions, to pass them later to datalaoders:
+    train_set = (X_train, y_train)
+    val_set = (X_val, y_val)
+    
+    # define some transformers before passing the image to our model:
+    train_transformer = T.Compose([
+        T.train_tranforms(height,width), 
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
+        # T.RandomSizedRectCrop(height, width),
+        # T.RandomHorizontalFlip(),
+        # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
+        # T.ToTensor(),
+    ])
+
+    test_transformer = T.Compose([
+        T.test_tranforms(height, width),
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
+    ])
+
+    loader = DataLoader(Preprocessor(train_set, root=images_dir,transform=train_transformer))
+    labels_list = []
+    for _, label in loader:
+        labels_list.append(label)
+    labels = torch.LongTensor(labels_list)
+    #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
+    # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
+    train_loader = DataLoader(
+        # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
+        Preprocessor(train_set, root=images_dir,
+                     transform=train_transformer),
+        batch_size=batch_size, num_workers=workers,
+        # shuffle=True,
+        shuffle = False,
+        # sampler=balanced_sampler, 
+        pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
+        drop_last=True) 
+
+    val_loader = DataLoader(
+        Preprocessor(val_set, root=images_dir,
+                     transform=test_transformer),
+        batch_size=batch_size, num_workers=workers,
+        shuffle=False, pin_memory=True)
+    # print(len(val_set[0])) 
+    return train_loader, val_loader
 
 def seed_all(seed):
   random.seed(seed)
@@ -229,10 +315,13 @@ def main(args):
     else:
         kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
     
+    test_loader, test_submit_loader = 
     for i, (train_index, test_index) in enumerate(kf.split(X)):
         X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
         
-        train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
+        train_loader, val_loader = train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, width, batch_size, workers)
+        test_loader, test_submit_loader = test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir , height, width, batch_size, workers, combine_trainval)
+        # train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
         model = create_model(args)
 
