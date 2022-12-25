@@ -323,7 +323,7 @@ def main(args):
 
     if args["training_configs"]["cv"]:
         # kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
-        kf = StratifiedKFold(n_splits=3)
+        kf = StratifiedKFold(n_splits=args["training_configs"]["folds"])
     else:
         # kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
         kf = StratifiedKFold(n_splits=3)
@@ -438,14 +438,15 @@ def main(args):
             print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
                 format(epoch, top1, best_top1, ' *' if is_best else ''))
 
-    # paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss_0/model_best.pth.tar', \
-    #             '/content/Data_Challenge/datachallenge/logs/test_loss_1/model_best.pth.tar', \
-    #             '/content/Data_Challenge/datachallenge/logs/test_loss_2/model_best.pth.tar']
+    path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_2']
     paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
+    # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # print("Validation:")
     # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
-    print("Test:")
-    evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
+    # print("Test:")
+    # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
     # print("Train:") #
     # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
