@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 
 class STM_DATA():
-    def __init__(self, extract_to=None, cross_val = False, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
+    def __init__(self, extract_to=None, cross_val = False, num_folds = 3, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
         if google_id == None:
             google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU&confirm=t"
         self.id = google_id
@@ -26,8 +26,9 @@ class STM_DATA():
         if download:
             self.download()
 
+        # check the case when you re-run the code while training and recreating the .json files
         self.scan()
-        self.split(cross_val)
+        self.split(cross_val, num_folds)
         if not self._check_integrity():
             raise RuntimeError("Dataset not found or corrupted. " +
                                "You can use download=True to download it.")
@@ -78,15 +79,21 @@ class STM_DATA():
                 'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
         write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
-    def split(self, cross_val = False):
-        
+    def split(self, cross_val = False, num_folds = 3):
+        # if cv is true, no need make a split for test set, but will see later:
         if cross_val:
             X,y = self.X, self.y
             X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
             X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
-            kf = KFold(n_splits=3, random_state=42, shuffle=True)
+            kf = KFold(n_splits=3, random_state=42, shuffle=True) # StratifiedKFold(n_splits=2)
+            train_idxs = []
+            test_idxs = []
             for i, (train_index, test_index) in enumerate(kf.split(X)):
-                pass
+                # will test the case to save indexes in RAM:
+                train_idxs.append(train_index)
+                test_idxs.append(test_idxs)
+            self.train_idxs = train_idxs
+            self.test_idxs = test_idxs
         else: 
             X,y = self.X, self.y
             X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)

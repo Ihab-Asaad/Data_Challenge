@@ -28,12 +28,12 @@ import gdown
 from torchviz import make_dot
 
 
-def get_data(name, cross_val , val_split, test_split, data_dir, combine_trainval):
+def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combine_trainval):
     
     extract_to = osp.join(data_dir, name) 
     # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
-    dataset = datasets.create(name, extract_to, cross_val, val_split= val_split, test_split= test_split, download = True)
+    dataset = datasets.create(name, extract_to, cross_val, num_folds, val_split= val_split, test_split= test_split, download = True)
 
     # create test dataset, this is the unlabeled data to be submitted:
     dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
@@ -160,7 +160,7 @@ def main(args):
     #     args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
     dataset, dataset_test, num_classes = \
-        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["val_split"], \
+        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["folds"], args["training_configs"]["val_split"], \
         args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
     train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
