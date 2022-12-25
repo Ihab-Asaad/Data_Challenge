@@ -35,7 +35,8 @@ class Еfficientnet(nn.Module):
         # Construct base (pretrained) Еfficientnet
         if depth not in Еfficientnet.__factory:
             raise KeyError("Unsupported depth:", depth)
-        self.base = Еfficientnet.__factory[depth](pretrained=pretrained)
+        # self.base = Еfficientnet.__factory[depth](pretrained=pretrained)
+        self.base = Еfficientnet.__factory[depth](weights='DEFAULT')
 
         if not self.cut_at_pooling:
             self.num_features = num_features
@@ -50,10 +51,11 @@ class Еfficientnet(nn.Module):
             if self.has_embedding:
                 self.feat = nn.Linear(out_planes, self.num_features)
                 self.feat_bn = nn.BatchNorm1d(self.num_features)
-                init.kaiming_normal(self.feat.weight, mode='fan_out')
-                init.constant(self.feat.bias, 0)
-                init.constant(self.feat_bn.weight, 1)
-                init.constant(self.feat_bn.bias, 0)
+                # init.kaiming_normal(self.feat.weight, mode='fan_out')
+                init.kaiming_normal_(self.feat.weight, mode='fan_out')
+                init.constant_(self.feat.bias, 0)
+                init.constant_(self.feat_bn.weight, 1)
+                init.constant_(self.feat_bn.bias, 0)
             else:
                 # Change the num_features to CNN output channels
                 self.num_features = out_planes
@@ -61,8 +63,8 @@ class Еfficientnet(nn.Module):
                 self.drop = nn.Dropout(self.dropout)
             if self.num_classes > 0:
                 self.classifier = nn.Linear(self.num_features, self.num_classes)
-                init.normal(self.classifier.weight, std=0.001)
-                init.constant(self.classifier.bias, 0)
+                init.normal_(self.classifier.weight, std=0.001)
+                init.constant_(self.classifier.bias, 0)
 
         if not self.pretrained:
             self.reset_params()

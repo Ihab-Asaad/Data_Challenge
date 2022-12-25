@@ -53,7 +53,7 @@ class RandomSizedRectCrop(object):
                           interpolation=self.interpolation)
         return scale(img)
 
-class SomeTrans():
+class train_tranforms():
     def __init__(self, width, height):
         self.width = width
         self.height = height
@@ -66,17 +66,50 @@ class SomeTrans():
                 albu.HorizontalFlip(p=0.5),
                 albu.VerticalFlip(p=0.5),
                 albu.OneOf([
-                    albu.MotionBlur(p=.2),
-                    albu.MedianBlur(blur_limit=3, p=0.1),
+                    # albu.MotionBlur(p=.2),
+                    # albu.MedianBlur(blur_limit=3, p=0.1),
                     albu.Blur(blur_limit=3, p=0.1),
                 ], p=0.25),
                 albu.OneOf([
                     albu.CLAHE(clip_limit=2),
-                    albu.IAASharpen(),
-                    albu.IAAEmboss(),
+                    # albu.IAASharpen(),
+                    # albu.IAAEmboss(),
                     albu.RandomBrightnessContrast(),            
                 ], p=0.25),
-                albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
+                # albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
+                albu.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
+                ToTensorV2(),
+            ])
+    def __call__(self, img):
+        image = np.array(img) # albu takes np array as input
+        image = self.transform(image=image)['image']
+        return image
+
+
+class test_tranforms():
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        # IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
+        # IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+        self.transform = albu.Compose([
+            # read about transforms and add more from here: https://albumentations.ai/docs/api_reference/augmentations/transforms/
+                albu.RandomResizedCrop(height=self.width, width=self.height, scale=(0.25, 1.0), ratio=(0.75, 1.3333333333333333), interpolation=1, p=1.0),
+                albu.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=30, interpolation=1, border_mode=0, value=0, p=0.25),
+                albu.HorizontalFlip(p=0.5),
+                albu.VerticalFlip(p=0.5),
+                # albu.OneOf([
+                #     # albu.MotionBlur(p=.2),
+                #     # albu.MedianBlur(blur_limit=3, p=0.1),
+                #     albu.Blur(blur_limit=3, p=0.1),
+                # ], p=0.25),
+                # albu.OneOf([
+                #     albu.CLAHE(clip_limit=2),
+                #     # albu.IAASharpen(),
+                #     # albu.IAAEmboss(),
+                #     albu.RandomBrightnessContrast(),            
+                # ], p=0.25),
+                # albu.Cutout(num_holes=8, max_h_size=32, max_w_size=32, fill_value=0, p=0.25),
                 albu.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
                 ToTensorV2(),
             ])

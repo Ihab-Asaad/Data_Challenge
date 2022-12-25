@@ -25,8 +25,7 @@ from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
 from pytorch_metric_learning import samplers
 from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 import gdown
-import netron
-
+from torchviz import make_dot
 
 
 def get_data(name, cross_val , val_split, test_split, data_dir, combine_trainval):
@@ -57,10 +56,10 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        # T.SomeTrans(height,width), 
-        T.RectScale(height, width),
-        T.ToTensor(),
-        normalizer,
+        T.train_tranforms(height,width), 
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
         # T.RandomSizedRectCrop(height, width),
         # T.RandomHorizontalFlip(),
         # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
@@ -68,15 +67,17 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     ])
 
     test_transformer = T.Compose([
-        T.RectScale(height, width),
-        T.ToTensor(),
-        normalizer,
+        T.test_tranforms(height, width),
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
     ])
 
     test_submit_transformer = T.Compose([
-        T.RectScale(height, width),
-        T.ToTensor(),
-        normalizer,
+        T.test_tranforms(height, width),
+        # T.RectScale(height, width),
+        # T.ToTensor(),
+        # normalizer,
     ])
 
     # https://pytorch.org/docs/master/data.html#torch.utils.data.sampler.WeightedRandomSampler
@@ -173,8 +174,12 @@ def main(args):
     trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
     # print(model)
-    model.save('model.h5')
-    netron.start('model.h5')
+    # torch.save(model.state_dict(),'model.pth')
+    # netron.start('model.pth')
+    # x = torch.rand(2, 3, 224, 224, dtype=torch.float, requires_grad=False).to(device)
+    # out = model(x)
+    # make_dot(out)
+    # make_dot(out, params=dict(list(model.named_parameters()))).render("rnn_torchviz", format="png")
 
     # Load from checkpoint: 
     # print learning rate while training to check if resuming take the currect lr
@@ -232,7 +237,8 @@ def main(args):
             #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
             # pass the paths of the trained models first, otherwise download from google:
             evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
+            paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar', \
+                        "18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
                         "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
                         "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t",\
                         "1hf9jjHIBJ7pO5sUb8qqxV5uu5GUCn0Zm&confirm=t"])
@@ -247,13 +253,13 @@ def main(args):
                         "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
                         "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t",\
                         "1hf9jjHIBJ7pO5sUb8qqxV5uu5GUCn0Zm&confirm=t"] # this is eff_5_adaboost
-        # paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar']
-        print("Validation:")
-        evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
+        paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar']
+        # print("Validation:")
+        # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
         evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
-        print("Train:") #
-        evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
+        # print("Train:") #
+        # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
         # configs = models.get_configs(args,num_classes)
         # save_checkpoint({
