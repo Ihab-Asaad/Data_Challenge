@@ -331,6 +331,7 @@ def main(args):
     test_loader, test_submit_loader = test_test_submit_dataloader(dataset.X_test, dataset.y_test, dataset_test.X, dataset.images_dir, dataset_test.images_dir , height, width, args["training"]["batch_size"], args["training"]["workers"])
 
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
+    path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
@@ -357,7 +358,7 @@ def main(args):
         
         # Criterion: pass weights to loss function:
         repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
-        print(repeat)
+
         torch_repeat = torch.Tensor(repeat)
         class_weights = sum(torch_repeat)/torch_repeat
         # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
@@ -423,6 +424,7 @@ def main(args):
             best_top1 = max(top1, best_top1)
 
             log_path = args["logging"]["logs_dir"] + "_" +str(i)
+            path_to_models.append(log_path)
             configs = models.get_configs(args,num_classes)
             save_checkpoint({
                 # 'state_dict': model.module.state_dict(),
@@ -436,16 +438,30 @@ def main(args):
             print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
                 format(epoch, top1, best_top1, ' *' if is_best else ''))
 
-    # Final test
-    print('Test with best model:')
-    checkpoint = load_checkpoint(osp.join(args["logging"]["logs_dir"], 'model_best.pth.tar'))
-    # model.module.load_state_dict(checkpoint['state_dict'])
-    model.load_state_dict(checkpoint['state_dict'])
-    # model = torch.load(checkpoint['model'])
-    # metric.train(model, train_loader)
-    evaluator.evaluate(test_loader)
+    # paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss_0/model_best.pth.tar', \
+    #             '/content/Data_Challenge/datachallenge/logs/test_loss_1/model_best.pth.tar', \
+    #             '/content/Data_Challenge/datachallenge/logs/test_loss_2/model_best.pth.tar']
+    paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
+    # print("Validation:")
+    # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
+    print("Test:")
+    evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
+    # print("Train:") #
+    # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
-    # Predict on external test set:
+    print("Predict:")
+    evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
+        
+    # # Final test
+    # print('Test with best model:')
+    # checkpoint = load_checkpoint(osp.join(args["logging"]["logs_dir"], 'model_best.pth.tar'))
+    # # model.module.load_state_dict(checkpoint['state_dict'])
+    # model.load_state_dict(checkpoint['state_dict'])
+    # # model = torch.load(checkpoint['model'])
+    # # metric.train(model, train_loader)
+    # evaluator.evaluate(test_loader)
+
+    # # Predict on external test set:
 
 
 if __name__ == '__main__':
