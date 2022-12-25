@@ -28,12 +28,12 @@ import gdown
 from torchviz import make_dot
 
 
-def get_data(name, cross_val , val_split, test_split, data_dir, combine_trainval):
+def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combine_trainval):
     
     extract_to = osp.join(data_dir, name) 
     # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
-    dataset = datasets.create(name, extract_to, cross_val, val_split= val_split, test_split= test_split, download = True)
+    dataset = datasets.create(name, extract_to, cross_val, num_folds, val_split= val_split, test_split= test_split, download = True)
 
     # create test dataset, this is the unlabeled data to be submitted:
     dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
@@ -160,26 +160,18 @@ def main(args):
     #     args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
     dataset, dataset_test, num_classes = \
-        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["val_split"], \
+        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["folds"], args["training_configs"]["val_split"], \
         args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
-    train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
+    if args["training_configs"]["cv"]:
+        kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
+    else:
+        kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
     
-    # Create model
-    model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
-                          dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
-
-    # create summary:
-    total_parameters = sum(p.numel() for p in model.parameters())
-    trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
-    # print(model)
-    # torch.save(model.state_dict(),'model.pth')
-    # netron.start('model.pth')
-    # x = torch.rand(2, 3, 224, 224, dtype=torch.float, requires_grad=False).to(device)
-    # out = model(x)
-    # make_dot(out)
-    # make_dot(out, params=dict(list(model.named_parameters()))).render("rnn_torchviz", format="png")
+    for i, (train_index, test_index) in enumerate(kf.split(X)):
+        X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
+        
+    train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
     # Load from checkpoint: 
     # print learning rate while training to check if resuming take the currect lr
@@ -209,12 +201,30 @@ def main(args):
         start_epoch = checkpoint['epoch']
         best_top1 = checkpoint['best_top1']
         print("=> Start epoch {}  best top1 {:.1%}"
-              .format(start_epoch, best_top1))
+                .format(start_epoch, best_top1))
     # model = nn.DataParallel(model).cuda() # this add attribute 'module' to model
+    else:
+        # Create model
+        model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
+                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
+
+    # create summary:
+    total_parameters = sum(p.numel() for p in model.parameters())
+    trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
+    # print(model)
+    # torch.save(model.state_dict(),'model.pth')
+    # netron.start('model.pth')
+    # x = torch.rand(2, 3, 224, 224, dtype=torch.float, requires_grad=False).to(device)
+    # out = model(x)
+    # make_dot(out)
+    # make_dot(out, params=dict(list(model.named_parameters()))).render("rnn_torchviz", format="png")
+
     
+        
     # Distance metric, will be added later
     # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
-    
+        
     # Evaluator
     evaluator = Evaluator(model, device)
 
