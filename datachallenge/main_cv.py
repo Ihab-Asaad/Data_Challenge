@@ -137,42 +137,7 @@ def seed_all(seed):
   torch.cuda.manual_seed_all(seed)
   os.environ['PYTHONHASHSEED'] = str(seed)
 
-
-def main(args):
-    seed_all(args["training_configs"]["seed"])
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    torch.cuda.empty_cache() 
-    gc.collect()
-    
-    # Redirect print to both console and log file
-    if not args["training_configs"]["evaluate"]:
-        sys.stdout = Logger(osp.join(args["logging"]["logs_dir"], 'log.txt'))
-    
-    # Create data loaders
-    height = args["net"]["height"]
-    width = args["net"]["width"]
-    if height is None or width is None:
-        height, width = (224, 224) 
-
-    # dataset, num_classes, train_loader, val_loader, test_loader, test_submit_loader = \
-    #     get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["val_split"], \
-    #     args["training_configs"]["test_split"], args["logging"]["data_dir"], height, width, \
-    #     args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
-
-    dataset, dataset_test, num_classes = \
-        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["folds"], args["training_configs"]["val_split"], \
-        args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
-
-    if args["training_configs"]["cv"]:
-        kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
-    else:
-        kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
-    
-    for i, (train_index, test_index) in enumerate(kf.split(X)):
-        X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
-        
-    train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
-
+def create_model(args):
     # Load from checkpoint: 
     # print learning rate while training to check if resuming take the currect lr
     start_epoch = best_top1 = 0
@@ -208,62 +173,46 @@ def main(args):
         model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                             dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
 
-    # create summary:
-    total_parameters = sum(p.numel() for p in model.parameters())
-    trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
-    # print(model)
-    # torch.save(model.state_dict(),'model.pth')
-    # netron.start('model.pth')
-    # x = torch.rand(2, 3, 224, 224, dtype=torch.float, requires_grad=False).to(device)
-    # out = model(x)
-    # make_dot(out)
-    # make_dot(out, params=dict(list(model.named_parameters()))).render("rnn_torchviz", format="png")
+    return model
 
+
+def main(args):
+    seed_all(args["training_configs"]["seed"])
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    torch.cuda.empty_cache() 
+    gc.collect()
     
-        
-    # Distance metric, will be added later
-    # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
-        
-    # Evaluator
-    evaluator = Evaluator(model, device)
+    # Redirect print to both console and log file
+    if not args["training_configs"]["evaluate"]:
+        sys.stdout = Logger(osp.join(args["logging"]["logs_dir"], 'log.txt'))
+    
+    # Create data loaders
+    height = args["net"]["height"]
+    width = args["net"]["width"]
+    if height is None or width is None:
+        height, width = (224, 224) 
+
+    dataset, dataset_test, num_classes = \
+        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["folds"], args["training_configs"]["val_split"], \
+        args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
 
     # add ensemble to .yaml file
-    ensemble = True
+    evaluator = Evaluator(create_model(args), device)
+    train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
+    ensemble = True # for sure
     paths = []
     if args["training_configs"]["predict"]:
         print("Prediction:")
-        if ensemble:
-            # you have to test the accuracy of ensemble on training dataloader before submission.
-            models_names = ['resnet50']
-            # for model_name in models_names:
-            #     models.append(models.create(model_name, num_features=args["training"]["features"],
-            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device))
-            # model1 = models.create('resnet18', num_features=args["training"]["features"],
-            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-            # model2 = models.create('resnet50', num_features=args["training"]["features"],
-            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-            # model3 = models.create('resnet101', num_features=args["training"]["features"],
-            #                 dropout=args["training"]["dropout"], num_classes=num_classes).to(device)
-            # pass the paths of the trained models first, otherwise download from google:
-            evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-            paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar', \
-                        "18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
-                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
-                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t",\
-                        "1hf9jjHIBJ7pO5sUb8qqxV5uu5GUCn0Zm&confirm=t"])
-            return
-        else:
-            evaluator.predict(test_submit_loader, dataset.classes_str)
-            return
-
+        # you have to test the accuracy of ensemble on training dataloader before submission.
+        models_names = ['resnet50']
+        # for model_name in models_names:
+        # pass the paths of the trained models first, otherwise download from google:
+        evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
+        paths_ids = ['add here the path to the models saved from cv '])
+        return
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ["18d0edUbdj02Aes_ZDPvIqBl8oQRiwg0f&confirm=t", \
-                        "1ueEhIUdO0ryajkJsxn9Cy4m-pZRVbK0N&confirm=t", \
-                        "1HrBMuIIdXwBPGkYmYF2iPE75QLPVDrl3&confirm=t",\
-                        "1hf9jjHIBJ7pO5sUb8qqxV5uu5GUCn0Zm&confirm=t"] # this is eff_5_adaboost
-        paths_ids = ['/content/Data_Challenge/datachallenge/logs/test_loss/checkpoint.pth.tar']
+        paths_ids = ['add here the path to the models saved from cv ']
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
@@ -271,97 +220,114 @@ def main(args):
         # print("Train:") #
         # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
-        # configs = models.get_configs(args,num_classes)
-        # save_checkpoint({
-        #     # 'state_dict': model.module.state_dict(),
-        #     'state_dict': model.state_dict(),
-        #     # 'model': model,
-        #     'epoch': 0,
-        #     'best_top1': 0.95,
-        #     'configs': configs,
-        # }, True, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
-
         # # make a folder for misclassified images:
         return
-    # Criterion: pass weights to loss function:
-    repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
-    print(repeat)
-    torch_repeat = torch.Tensor(repeat)
-    class_weights = sum(torch_repeat)/torch_repeat
-    # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
-    custom_loss = False # make it in .yaml
-    if custom_loss:
-        criterion = CustomCrossEntropyLoss(device = device).cuda()
+
+
+    if args["training_configs"]["cv"]:
+        kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
     else:
-        criterion = nn.CrossEntropyLoss().cuda() 
+        kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
+    
+    for i, (train_index, test_index) in enumerate(kf.split(X)):
+        X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
+        
+        train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
-    # Optimizer
-    # if hasattr(model.module, 'base'):
-    #     base_param_ids = set(map(id, model.module.base.parameters()))
-    #     new_params = [p for p in model.parameters() if
-    #                   id(p) not in base_param_ids]
-    #     param_groups = [
-    #         {'params': model.module.base.parameters(), 'lr_mult': 0.1},
-    #         {'params': new_params, 'lr_mult': 1.0}]
-    # else:
-    #     param_groups = model.parameters()
-    # optimizer = torch.optim.SGD(param_groups, lr=args["training"]["lr"],
-    #                             momentum=args["training"]["momentum"],
-    #                             weight_decay=args["training"]["weight_decay"],
-    #                             nesterov=True)
+        model = create_model(args)
 
-    # in case you are using a pretrained model, train its weights with lower lr to not destroy the prelearned features.
-    if hasattr(model, 'base'):
-        base_param_ids = set(map(id, model.base.parameters()))
-        new_params = [p for p in model.parameters() if
-                      id(p) not in base_param_ids]
-        param_groups = [
-            {'params': model.base.parameters(), 'lr_mult': 0.1},
-            {'params': new_params, 'lr_mult': 1}]
-    else:
-        param_groups = model.parameters()
-    optimizer = torch.optim.SGD(param_groups, lr=args["training"]["lr"],
-                                momentum=args["training"]["momentum"],
-                                weight_decay=args["training"]["weight_decay"],
-                                nesterov=True)
-    # optimizer = torch.optim.Adam(param_groups, lr=args["training"]["lr"],
-    #                             weight_decay=args["training"]["weight_decay"])
+        # create summary:
+        total_parameters = sum(p.numel() for p in model.parameters())
+        trainable_parameters  = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        print("Total parameters: ", total_parameters, "Trainable parameters: ", trainable_parameters)
+        # print(model)    
+            
+        # Distance metric, will be added later
+        # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
+            
+        # Evaluator
+        evaluator = Evaluator(model, device)
 
-    # Trainer
-    trainer = Trainer(model, criterion, device, custom_loss)
+        
+        # Criterion: pass weights to loss function:
+        repeat = dataset.weights_trainval if args["training_configs"]["combine_trainval"] else dataset.weights_train
+        print(repeat)
+        torch_repeat = torch.Tensor(repeat)
+        class_weights = sum(torch_repeat)/torch_repeat
+        # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda() 
+        custom_loss = False # make it in .yaml
+        if custom_loss:
+            criterion = CustomCrossEntropyLoss(device = device).cuda()
+        else:
+            criterion = nn.CrossEntropyLoss().cuda() 
 
-    # print lr with metrics:
-    # Schedule learning rate, see automation functions in torch, see also:
-    # https://www.kaggle.com/code/isbhargav/guide-to-pytorch-learning-rate-scheduling/notebook
-    def adjust_lr(epoch):
-        step_size = 60 if args["net"]["arch"] == 'inception' else 40
-        lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
-        for g in optimizer.param_groups:
-            g['lr'] = lr * g.get('lr_mult', 1)
+        # Optimizer
+        # if hasattr(model.module, 'base'):
+        #     base_param_ids = set(map(id, model.module.base.parameters()))
+        #     new_params = [p for p in model.parameters() if
+        #                   id(p) not in base_param_ids]
+        #     param_groups = [
+        #         {'params': model.module.base.parameters(), 'lr_mult': 0.1},
+        #         {'params': new_params, 'lr_mult': 1.0}]
+        # else:
+        #     param_groups = model.parameters()
+        # optimizer = torch.optim.SGD(param_groups, lr=args["training"]["lr"],
+        #                             momentum=args["training"]["momentum"],
+        #                             weight_decay=args["training"]["weight_decay"],
+        #                             nesterov=True)
 
-    # Start training
-    for epoch in range(start_epoch, args["training"]["epochs"]):
-        adjust_lr(epoch)
-        trainer.train(epoch, train_loader, optimizer)
-        if epoch < args["training_configs"]["start_save"]:
-            continue
-        metrics_ = evaluator.evaluate(val_loader)
-        top1 = metrics_[0] # acc macro
-        is_best = top1 > best_top1
-        best_top1 = max(top1, best_top1)
+        # in case you are using a pretrained model, train its weights with lower lr to not destroy the prelearned features.
+        if hasattr(model, 'base'):
+            base_param_ids = set(map(id, model.base.parameters()))
+            new_params = [p for p in model.parameters() if
+                        id(p) not in base_param_ids]
+            param_groups = [
+                {'params': model.base.parameters(), 'lr_mult': 0.1},
+                {'params': new_params, 'lr_mult': 1}]
+        else:
+            param_groups = model.parameters()
+        optimizer = torch.optim.SGD(param_groups, lr=args["training"]["lr"],
+                                    momentum=args["training"]["momentum"],
+                                    weight_decay=args["training"]["weight_decay"],
+                                    nesterov=True)
+        # optimizer = torch.optim.Adam(param_groups, lr=args["training"]["lr"],
+        #                             weight_decay=args["training"]["weight_decay"])
 
-        configs = models.get_configs(args,num_classes)
-        save_checkpoint({
-            # 'state_dict': model.module.state_dict(),
-            'state_dict': model.state_dict(),
-            # 'model': model,
-            'epoch': epoch + 1,
-            'best_top1': best_top1,
-            'configs': configs,
-        }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
+        # Trainer
+        trainer = Trainer(model, criterion, device, custom_loss)
 
-        print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
-              format(epoch, top1, best_top1, ' *' if is_best else ''))
+        # print lr with metrics:
+        # Schedule learning rate, see automation functions in torch, see also:
+        # https://www.kaggle.com/code/isbhargav/guide-to-pytorch-learning-rate-scheduling/notebook
+        def adjust_lr(epoch):
+            step_size = 60 if args["net"]["arch"] == 'inception' else 40
+            lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
+            for g in optimizer.param_groups:
+                g['lr'] = lr * g.get('lr_mult', 1)
+
+        # Start training
+        for epoch in range(start_epoch, args["training"]["epochs"]):
+            adjust_lr(epoch)
+            trainer.train(epoch, train_loader, optimizer)
+            if epoch < args["training_configs"]["start_save"]:
+                continue
+            metrics_ = evaluator.evaluate(val_loader)
+            top1 = metrics_[0] # acc macro
+            is_best = top1 > best_top1
+            best_top1 = max(top1, best_top1)
+
+            configs = models.get_configs(args,num_classes)
+            save_checkpoint({
+                # 'state_dict': model.module.state_dict(),
+                'state_dict': model.state_dict(),
+                # 'model': model,
+                'epoch': epoch + 1,
+                'best_top1': best_top1,
+                'configs': configs,
+            }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
+
+            print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
+                format(epoch, top1, best_top1, ' *' if is_best else ''))
 
     # Final test
     print('Test with best model:')

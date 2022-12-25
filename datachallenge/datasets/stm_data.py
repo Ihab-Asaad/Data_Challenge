@@ -80,32 +80,32 @@ class STM_DATA():
 
     def split(self, cross_val = False):
         
-        if cross_val:
-            X,y = self.X, self.y
-            X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
-            X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
-            kf = KFold(n_splits=3, random_state=42, shuffle=True)
-            for i, (train_index, test_index) in enumerate(kf.split(X)):
-                pass
-        else: 
-            X,y = self.X, self.y
-            X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
-            X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
-            # Save meta information into a json file
-            splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
-                    'X_test': X_test,'y_test': y_test}
-            write_json(splits, osp.join(self.extract_to, 'splits.json'))
+        # if cross_val:
+        #     X,y = self.X, self.y
+        #     X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
+        #     X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
+        #     kf = KFold(n_splits=3, random_state=42, shuffle=True)
+        #     for i, (train_index, test_index) in enumerate(kf.split(X)):
+        #         pass
+        # else: 
+        X,y = self.X, self.y
+        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
+        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
+        # Save meta information into a json file
+        splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
+                'X_test': X_test,'y_test': y_test}
+        write_json(splits, osp.join(self.extract_to, 'splits.json'))
 
-            self.X_trainval= X_train_val
-            self.y_trainval = y_train_val
-            self.X_train = X_train
-            self.y_train = y_train
-            self.X_val = X_val
-            self.y_val = y_val
-            self.X_test = X_test
-            self.y_test = y_test
-            self.weights_trainval = list(Counter(y_train_val).values())
-            self.weights_train = list(Counter(y_train).values())
+        self.X_trainval= X_train_val
+        self.y_trainval = y_train_val
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_val = X_val
+        self.y_val = y_val
+        self.X_test = X_test
+        self.y_test = y_test
+        self.weights_trainval = list(Counter(y_train_val).values())
+        self.weights_train = list(Counter(y_train).values())
     def summary(self, verbose = True):
         if verbose:
             print(self.__class__.__name__, "dataset loaded")
