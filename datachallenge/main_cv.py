@@ -106,7 +106,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
         # shuffle=True,
-        shuffle = False,
+        shuffle = True,
         # sampler=balanced_sampler, 
         pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         drop_last=True) 
@@ -202,7 +202,7 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
         # shuffle=True,
-        shuffle = False,
+        shuffle = True,
         # sampler=balanced_sampler, 
         pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         drop_last=True) 
@@ -213,10 +213,7 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
     print(len(val_set[0])) 
-    for i, (imgs, classes) in enumerate(val_loader):
-        print("I am here")
-        print(classes)
-        break
+
     return train_loader, val_loader
 
 def seed_all(seed):
@@ -333,16 +330,12 @@ def main(args):
     
     test_loader, test_submit_loader = test_test_submit_dataloader(dataset.X_test, dataset.y_test, dataset_test.X, dataset.images_dir, dataset_test.images_dir , height, width, args["training"]["batch_size"], args["training"]["workers"])
 
-    print(type(np.array(dataset.X)))
-    print(np.array(dataset.X).shape)
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
         print(" Fold: ", i)
-        print(train_index)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
 
-        print(len(X_train_fold), len(y_train_fold), y_train_fold)
         train_loader, val_loader = train_val_dataloader(X_train_fold, y_train_fold, X_val_fold, y_val_fold, dataset.images_dir, height, width, args["training"]["batch_size"], args["training"]["workers"])
         
         # train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
