@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from collections import Counter
 
 class STM_DATA():
-    def __init__(self, extract_to=None, cross_val = False, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
+    def __init__(self, extract_to=None, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
         if google_id == None:
             google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU&confirm=t"
         self.id = google_id
@@ -27,7 +27,7 @@ class STM_DATA():
             self.download()
 
         self.scan()
-        self.split(cross_val)
+        self.split()
         if not self._check_integrity():
             raise RuntimeError("Dataset not found or corrupted. " +
                                "You can use download=True to download it.")
@@ -78,7 +78,7 @@ class STM_DATA():
                 'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
         write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
-    def split(self, cross_val = False):
+    def split(self):
         
         # if cross_val:
         #     X,y = self.X, self.y

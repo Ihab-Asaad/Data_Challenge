@@ -26,6 +26,7 @@ from pytorch_metric_learning import samplers
 from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 import gdown
 from torchviz import make_dot
+from sklearn.model_selection import KFold
 
 
 def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combine_trainval):
@@ -33,7 +34,7 @@ def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combi
     extract_to = osp.join(data_dir, name) 
     # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
-    dataset = datasets.create(name, extract_to, cross_val, num_folds, val_split= val_split, test_split= test_split, download = True)
+    dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
 
     # create test dataset, this is the unlabeled data to be submitted:
     dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
@@ -257,7 +258,7 @@ def create_model(args):
     else:
         # Create model
         model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
-                            dropout=args["training"]["dropout"], num_classes=num_classes).to(device) # no need to use .to(device) as below we are using DataParallel
+                            dropout=args["training"]["dropout"], num_classes=args["num_classes"]).to(args["device"]) # no need to use .to(device) as below we are using DataParallel
 
     return model
 
@@ -281,7 +282,8 @@ def main(args):
     dataset, dataset_test, num_classes = \
         get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["folds"], args["training_configs"]["val_split"], \
         args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
-
+    args["num_classes"] = dataset.num_classes
+    args["device"] = device
     # add ensemble to .yaml file
     evaluator = Evaluator(create_model(args), device)
     train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
@@ -309,18 +311,17 @@ def main(args):
         # # make a folder for misclassified images:
         return
 
-
     if args["training_configs"]["cv"]:
         kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
     else:
         kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
     
-    test_loader, test_submit_loader = 
+    test_loader, test_submit_loader = test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir , height, width, batch_size, workers)
     for i, (train_index, test_index) in enumerate(kf.split(X)):
         X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
         
         train_loader, val_loader = train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, width, batch_size, workers)
-        test_loader, test_submit_loader = test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir , height, width, batch_size, workers, combine_trainval)
+        
         # train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
         model = create_model(args)
@@ -405,6 +406,7 @@ def main(args):
             is_best = top1 > best_top1
             best_top1 = max(top1, best_top1)
 
+            log_path = args["logging"]["logs_dir"] + "_" +str(i)
             configs = models.get_configs(args,num_classes)
             save_checkpoint({
                 # 'state_dict': model.module.state_dict(),
@@ -413,7 +415,7 @@ def main(args):
                 'epoch': epoch + 1,
                 'best_top1': best_top1,
                 'configs': configs,
-            }, is_best, fpath=osp.join(args["logging"]["logs_dir"], 'checkpoint.pth.tar'))
+            }, is_best, fpath=osp.join(log_path, 'checkpoint.pth.tar'))
 
             print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
                 format(epoch, top1, best_top1, ' *' if is_best else ''))

@@ -40,4 +40,5 @@ def create(name, extract_to, *args, **kwargs):
     """
     if name not in __factory:
         raise KeyError("Unknown dataset:", name)
+    print(args,kwargs)
     return __factory[name](extract_to, *args, **kwargs)
