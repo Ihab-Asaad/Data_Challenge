@@ -59,10 +59,8 @@ def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device(
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
         # logits_ = torch.cat([x for x in logits], dim=0)
-    print(logits)
     logits_ = torch.cat([x for x in logits], dim=0)
     # logits_ = torch.FloatTensor(logits) 
-    print(logits_.shape)       
     return imgs_names, logits_
 
 def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq=1, device = torch.device('cpu')):
@@ -167,7 +165,6 @@ class Evaluator(object):
         logits = logits_final # don't take argmax if you need top k
         # logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         confusion_matrix = conf_matrix(logits, targets)
-        print(logits, logits.shape)
         acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
         print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
         print("Confusion_matrix: \n", confusion_matrix)
@@ -181,7 +178,6 @@ class Evaluator(object):
                     checkpoint = load_checkpoint(paths_ids[idx])
                 else:
                     # download from google drive:
-                    print("Helllllllllllllllllllllllllllllllllllllllo")
                     self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
                     checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
                 model_configs = checkpoint['configs']
@@ -198,7 +194,6 @@ class Evaluator(object):
                     got_first = True
                 else:
                     logits_final = logits_final+ logits_soft
-                print(logits_final.shape)
             logits = torch.argmax(logits_final, axis = 1)
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)

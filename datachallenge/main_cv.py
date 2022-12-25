@@ -333,6 +333,7 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
+        break
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
@@ -440,9 +441,11 @@ def main(args):
 
     path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
                 '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_2']
-    paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
-    # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
+                '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_4']
+    # paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
+    paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # print("Validation:")
     # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
     # print("Test:")
