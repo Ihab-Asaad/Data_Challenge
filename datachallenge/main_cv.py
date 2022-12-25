@@ -130,7 +130,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     return train_loader, val_loader, test_loader, test_submit_loader
 
 
-def test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir, images_dir_test , height, width, batch_size, workers, combine_trainval):
+def test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir, images_dir_test , height, width, batch_size, workers):
         # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
     normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
                              std=[0.229, 0.224, 0.225])
@@ -316,11 +316,13 @@ def main(args):
     else:
         kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
     
-    test_loader, test_submit_loader = test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir , height, width, batch_size, workers)
+    test_loader, test_submit_loader = test_test_submit_dataloader(X_test, y_test, X_test_submit, dataset.images_dir, dataset_test.images_dir , height, width, args["training"]["batch_size"], args["training"]["workers"])
+
     for i, (train_index, test_index) in enumerate(kf.split(X)):
         X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
-        
-        train_loader, val_loader = train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, width, batch_size, workers)
+        X_val_fold, y_val_fold = dataset.X[test_index], dataset.y[test_index]
+
+        train_loader, val_loader = train_val_dataloader(X_train_fold, y_y_train_fold, X_val_fold, y_val_fold, dataset.images_dir, height, width, args["training"]["batch_size"], args["training"]["workers"])
         
         # train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
