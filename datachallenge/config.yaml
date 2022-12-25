@@ -36,7 +36,7 @@ training:
     margin: 0.5 # for triplet loss
 
 training_configs:
-    cv: False # cross validation
+    cv: True # cross validation
     folds: 3
     combine_trainval: False # if True train and val sets together for training, and val set alone for validataion.
     resume : '' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir

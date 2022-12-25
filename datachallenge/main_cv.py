@@ -26,7 +26,7 @@ from pytorch_metric_learning import samplers
 from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 import gdown
 from torchviz import make_dot
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 
 
 def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combine_trainval):
@@ -212,7 +212,11 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
                      transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
-    # print(len(val_set[0])) 
+    print(len(val_set[0])) 
+    for i, (imgs, classes) in enumerate(val_loader):
+        print("I am here")
+        print(classes)
+        break
     return train_loader, val_loader
 
 def seed_all(seed):
@@ -224,10 +228,16 @@ def seed_all(seed):
   torch.cuda.manual_seed_all(seed)
   os.environ['PYTHONHASHSEED'] = str(seed)
 
+
+start_epoch= 0 
+best_top1 = 0
 def create_model(args):
     # Load from checkpoint: 
     # print learning rate while training to check if resuming take the currect lr
-    start_epoch = best_top1 = 0
+    global start_epoch
+    global best_top1
+    start_epoch = 0 
+    best_top1 = 0
     if args["training_configs"]["resume"]:
         print("Load from saved model...")
         if osp.exists(args["training_configs"]["resume"]):
@@ -264,6 +274,9 @@ def create_model(args):
 
 
 def main(args):
+    global best_top1
+    global start_epoch
+
     seed_all(args["training_configs"]["seed"])
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     torch.cuda.empty_cache() 
@@ -312,17 +325,25 @@ def main(args):
         return
 
     if args["training_configs"]["cv"]:
-        kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
+        # kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
+        kf = StratifiedKFold(n_splits=3)
     else:
-        kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
+        # kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
+        kf = StratifiedKFold(n_splits=3)
     
-    test_loader, test_submit_loader = test_test_submit_dataloader(X_test, y_test, X_test_submit, dataset.images_dir, dataset_test.images_dir , height, width, args["training"]["batch_size"], args["training"]["workers"])
+    test_loader, test_submit_loader = test_test_submit_dataloader(dataset.X_test, dataset.y_test, dataset_test.X, dataset.images_dir, dataset_test.images_dir , height, width, args["training"]["batch_size"], args["training"]["workers"])
 
-    for i, (train_index, test_index) in enumerate(kf.split(X)):
-        X_train_fold, y_train_fold= dataset.X[train_index], dataset.y[train_index]
-        X_val_fold, y_val_fold = dataset.X[test_index], dataset.y[test_index]
+    print(type(np.array(dataset.X)))
+    print(np.array(dataset.X).shape)
+    training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
+    for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
+        print(" Fold: ", i)
+        print(train_index)
+        X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
+        X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
 
-        train_loader, val_loader = train_val_dataloader(X_train_fold, y_y_train_fold, X_val_fold, y_val_fold, dataset.images_dir, height, width, args["training"]["batch_size"], args["training"]["workers"])
+        print(len(X_train_fold), len(y_train_fold), y_train_fold)
+        train_loader, val_loader = train_val_dataloader(X_train_fold, y_train_fold, X_val_fold, y_val_fold, dataset.images_dir, height, width, args["training"]["batch_size"], args["training"]["workers"])
         
         # train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
 
