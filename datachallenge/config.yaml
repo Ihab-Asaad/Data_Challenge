@@ -10,7 +10,7 @@ dataset:
     extract_to: ''
 
 net: 
-    arch : 'resnet50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
+    arch : 'efficientnet_b5' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
     # 'inception': from scratch, not added yet
     # 'efficientnet', 'efficientnet_b0','efficientnet_b1','efficientnet_b2','efficientnet_b3','efficientnet_b4','efficientnet_b5','efficientnet_b6','efficientnet_b7'
     # 'cusnet'
@@ -21,7 +21,7 @@ net:
 
 # training
 training:
-    epochs : 30
+    epochs : 50
     batch_size: 16 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
     features: 256 # number of features after base model
@@ -37,7 +37,7 @@ training:
 
 training_configs:
     cv: True # cross validation
-    folds: 5
+    folds: 3
     combine_trainval: False # if True train and val sets together for training, and val set alone for validataion.
     resume : '' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' # '/content/Data_Challenge/datachallenge/logs/model_best.pth.tar' #'/content/open_reid/examples/Person_reid/logs/model_best.pth.tar' # (= path to .pth.tar) the training from latest checkpoint.pth.tar from logs dir
     evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
