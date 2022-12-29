@@ -419,7 +419,7 @@ def main(args):
             if epoch < args["training_configs"]["start_save"]:
                 continue
             metrics_ = evaluator.evaluate(val_loader)
-            top1 = metrics_[0] # acc macro
+            top1 = metrics_[1] # acc macro
             is_best = top1 > best_top1
             best_top1 = max(top1, best_top1)
 
@@ -440,7 +440,14 @@ def main(args):
 
     path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
                 '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_2']
+                '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_4']
+                # "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
+                # "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
+                # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
+                # "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
+                # "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
     paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
     # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # print("Validation:")

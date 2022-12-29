@@ -24,7 +24,7 @@ def accuracy_micro(output, target):
 
 def prec_rec(output, target):
     # precision = Precision(task="multiclass", average='macro', num_classes=8)
-    precision = Precision(task="multiclass", num_classes=8)
+    precision = Precision(task="multiclass", average ='weighted', num_classes=8)
     prec_ = precision(output, target)
     # recall = Recall(task="multiclass", average='macro', num_classes=8)
     recall = Recall(task="multiclass", num_classes=8)

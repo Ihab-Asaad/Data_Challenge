@@ -194,9 +194,13 @@ class Evaluator(object):
                     got_first = True
                 else:
                     logits_final = logits_final+ logits_soft
+            logits_final = logits_final/len(paths_ids)
             logits = torch.argmax(logits_final, axis = 1)
+            probs = logits_final[logits]
             df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
+            df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][logits[i]].data for i in range(len(logits.tolist()))]})
+            df_probs.to_csv('probs.csv', index=False)
         else:
             imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
             logits_soft = nn.Softmax(dim=1)(logits)
