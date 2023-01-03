@@ -96,7 +96,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     #     drop_last=True) 
     loader = DataLoader(Preprocessor(train_set, root=dataset.images_dir,transform=train_transformer))
     labels_list = []
-    for _, label in loader:
+    for _, label, _ in loader: # return img, target, image_path
         labels_list.append(label)
     labels = torch.LongTensor(labels_list)
     #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
@@ -455,11 +455,7 @@ def main(args):
                 # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
                 # "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
                 # "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
-                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
-                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
-                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
-                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
+    paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t"]
     # paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
     # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # print("Validation:")

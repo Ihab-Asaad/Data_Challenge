@@ -28,7 +28,7 @@ class BaseTrainer(object):
         for i, inputs in enumerate(data_loader):
             data_time.update(time.time() - end)
 
-            inputs, targets = self._parse_data(inputs)
+            inputs, targets, _ = self._parse_data(inputs)
             # x = inputs.to(device)
             # y = targets.to(device)
             loss, prec1 = self._forward(inputs, targets)
