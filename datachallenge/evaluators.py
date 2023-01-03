@@ -159,10 +159,15 @@ class Evaluator(object):
                     got_first = True
                 else:
                     logits_final = logits_final+ logits_soft
+            logits_final = logits_final/len(paths_ids)
         else:
             logits_final, targets = get_logits_all(self.model, data_loader, device = self.device)
         # logits = torch.argmax(logits_final, axis = 1)
         logits = logits_final # don't take argmax if you need top k
+        pred_idx = torch.argmax(logits_final, axis = 1)
+        probs = logits_final[pred_idx]
+        df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][pred_idx[i]].data for i in range(len(pred_idx.tolist()))]})
+        df_probs.to_csv('probs_train.csv', index=False)
         # logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         confusion_matrix = conf_matrix(logits, targets)
         acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
@@ -170,7 +175,7 @@ class Evaluator(object):
         print("Confusion_matrix: \n", confusion_matrix)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = []):
+    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = [], num_pred_per_model = 3):
         if ensemble:
             got_first = False
             for idx, path in enumerate(paths_ids):
@@ -187,17 +192,18 @@ class Evaluator(object):
                 model.load_state_dict(checkpoint['state_dict'])
 
                 # model = checkpoint['model'].to(self.device)
-                imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
-                logits_soft = nn.Softmax(dim=1)(logits)
-                if not got_first:
-                    logits_final = logits_soft
-                    got_first = True
-                else:
-                    logits_final = logits_final+ logits_soft
-            logits_final = logits_final/len(paths_ids)
+                for i in range(num_pred_per_model):
+                    imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
+                    logits_soft = nn.Softmax(dim=1)(logits)
+                    if not got_first:
+                        logits_final = logits_soft
+                        got_first = True
+                    else:
+                        logits_final = logits_final+ logits_soft
+            logits_final = logits_final/(len(paths_ids)*num_pred_per_model)
             logits = torch.argmax(logits_final, axis = 1)
             probs = logits_final[logits]
-            df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
+            df = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
             df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][logits[i]].data for i in range(len(logits.tolist()))]})
             df_probs.to_csv('probs.csv', index=False)
@@ -205,7 +211,7 @@ class Evaluator(object):
             imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
             logits_soft = nn.Softmax(dim=1)(logits)
             logits = torch.argmax(logits_soft, axis = 1)
-            df = pd.DataFrame({'id': imgs_names, 'label': [classes_str[i] for i in logits.tolist()]})
+            df = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission.csv', index=False)
 
 

@@ -53,6 +53,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
     val_set = (dataset.X_val, dataset.y_val)
     test_set = (dataset.X_test, dataset.y_test)
     test_set_submit = (dataset_test.X)
+    all_dataset = (dataset.X, dataset.y)
     # num_classes = dataset.num_classes
 
     # define some transformers before passing the image to our model:
@@ -116,7 +117,12 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
                      transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
-    print(len(val_set[0]))
+
+    alldata_loader = DataLoader( # has to have its own transforms : just resize and convert to tensor.
+        Preprocessor(all_dataset, root=dataset.images_dir,
+                     transform=test_transformer),
+        batch_size=batch_size, num_workers=workers,
+        shuffle=False, pin_memory=True)
 
     test_loader = DataLoader(
         Preprocessor(test_set, root=dataset.images_dir, transform=test_transformer),
@@ -127,7 +133,7 @@ def dataset_dataloader(dataset, dataset_test , height, width, batch_size, worker
         Preprocessor(test_set_submit, root = dataset_test.images_dir, transform=test_submit_transformer),
         batch_size = 1, num_workers=workers, shuffle=False, pin_memory=True)
     
-    return train_loader, val_loader, test_loader, test_submit_loader
+    return train_loader, val_loader, test_loader, test_submit_loader, alldata_loader
 
 
 def test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir, images_dir_test , height, width, batch_size, workers):
@@ -296,7 +302,7 @@ def main(args):
     args["device"] = device
     # add ensemble to .yaml file
     evaluator = Evaluator(create_model(args), device)
-    train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
+    train_loader, val_loader, test_loader, test_submit_loader, alldata_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
     ensemble = True # for sure
     paths = []
     if args["training_configs"]["predict"]:
@@ -333,6 +339,7 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
+        break
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
@@ -438,17 +445,22 @@ def main(args):
             print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
                 format(epoch, top1, best_top1, ' *' if is_best else ''))
 
-    path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_4']
+    # path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
+    #             '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
+    #             '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
+    #             '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
+    #             '/content/Data_Challenge/datachallenge/logs/test_loss_4']
                 # "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
                 # "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
                 # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
                 # "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
                 # "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
+    paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
+                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
+                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
+                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
+                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
+    # paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
     # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # print("Validation:")
     # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
@@ -456,9 +468,12 @@ def main(args):
     # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
     # print("Train:") #
     # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
+    
+    print("All data:") #
+    evaluator.evaluate(alldata_loader, ensemble = True, paths_ids = paths_ids)
 
-    print("Predict:")
-    evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
+    # print("Predict:")
+    # evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
         
     # # Final test
     # print('Test with best model:')
