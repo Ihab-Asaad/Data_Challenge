@@ -168,7 +168,7 @@ class Evaluator(object):
         logits = logits_final # don't take argmax if you need top k
         pred_idx = torch.argmax(logits_final, axis = 1)
         probs = logits_final[pred_idx]
-        df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][pred_idx[i]].data for i in range(len(pred_idx.tolist()))], 'pred_class': pred_idx, 'true_class': targets})
+        df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][pred_idx[i]].item() for i in range(len(pred_idx.tolist()))], 'pred_class': pred_idx, 'true_class': targets})
         df_probs.to_csv('probs_train.csv', index=False)
         # logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         confusion_matrix = conf_matrix(logits, targets)
@@ -207,7 +207,7 @@ class Evaluator(object):
             probs = logits_final[logits]
             df = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
-            df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][logits[i]].data for i in range(len(logits.tolist()))]})
+            df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
             df_probs.to_csv('probs.csv', index=False)
         else:
             imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)

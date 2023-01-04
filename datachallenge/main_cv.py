@@ -455,7 +455,11 @@ def main(args):
                 # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
                 # "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
                 # "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t"]
+    paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
+                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
+                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
+                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
+                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
     # paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
     # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # print("Validation:")
