@@ -10,7 +10,7 @@ import sys
 import torch
 from torch import nn
 from torch.backends import cudnn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 import gc
 
 from datachallenge import datasets
@@ -27,6 +27,7 @@ from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 import gdown
 from torchviz import make_dot
 from sklearn.model_selection import KFold, StratifiedKFold
+from visualize import visualize
 
 
 def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combine_trainval):
@@ -196,20 +197,25 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
     ])
 
     loader = DataLoader(Preprocessor(train_set, root=images_dir,transform=train_transformer))
-    labels_list = []
-    for _, label in loader:
+    imgs_weights_dict = visualize()
+    labels_list, imgs_weights = [],[]
+    for _, label, img_name in loader:
+        # print(img_name)
         labels_list.append(label)
+        imgs_weights.append(imgs_weights_dict[img_name[0]])
     labels = torch.LongTensor(labels_list)
     #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
     # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
+    sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = len(labels), replacement = True)
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=images_dir,
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
         # shuffle=True,
-        shuffle = True,
+        # shuffle = True,
         # sampler=balanced_sampler, 
+        sampler = sampler,
         pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         drop_last=True) 
 
@@ -339,7 +345,6 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
-        break
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
@@ -423,6 +428,7 @@ def main(args):
         for epoch in range(start_epoch, args["training"]["epochs"]):
             adjust_lr(epoch)
             trainer.train(epoch, train_loader, optimizer)
+            # trainer.train(epoch, alldata_loader, optimizer)
             if epoch < args["training_configs"]["start_save"]:
                 continue
             metrics_ = evaluator.evaluate(val_loader)
@@ -444,6 +450,7 @@ def main(args):
 
             print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
                 format(epoch, top1, best_top1, ' *' if is_best else ''))
+            
 
     # path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
     #             '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
@@ -455,25 +462,26 @@ def main(args):
                 # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
                 # "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
                 # "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
-                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
-                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
-                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
-                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    # paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
-    # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
-    # print("Validation:")
-    # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
-    # print("Test:")
-    # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
-    # print("Train:") #
-    # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
+    # paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
+    #             "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
+    #             "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
+    #             "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
+    #             "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
+    # paths_ids = ["/content/Data_Challenge/datachallenge/logs/test_loss_0/checkpoint.pth.tar"]
+    paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
+    # # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
+    # # print("Validation:")
+    # # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
+    # # print("Test:")
+    # # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
+    # # print("Train:") #
+    # # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
     
     print("All data:") #
     evaluator.evaluate(alldata_loader, ensemble = True, paths_ids = paths_ids)
 
-    # print("Predict:")
-    # evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
+    print("Predict:")
+    evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
         
     # # Final test
     # print('Test with best model:')

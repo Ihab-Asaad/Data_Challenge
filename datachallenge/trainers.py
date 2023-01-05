@@ -28,7 +28,7 @@ class BaseTrainer(object):
         for i, inputs in enumerate(data_loader):
             data_time.update(time.time() - end)
 
-            inputs, targets, _ = self._parse_data(inputs)
+            inputs, targets = self._parse_data(inputs)
             # x = inputs.to(device)
             # y = targets.to(device)
             loss, prec1 = self._forward(inputs, targets)
@@ -66,7 +66,7 @@ class BaseTrainer(object):
 
 class Trainer(BaseTrainer):
     def _parse_data(self, inputs):
-        imgs, classes= inputs
+        imgs, classes, _ = inputs # ignore img_name
         # inputs = [Variable(imgs)] # depricated 
         # targets = Variable(pids.cuda())
         inputs = imgs.to(self.device) # Input type (torch.FloatTensor) and weight type (torch.cuda.FloatTensor) should be the same or input should be a MKLDNN tensor and weight is a dense tensor
