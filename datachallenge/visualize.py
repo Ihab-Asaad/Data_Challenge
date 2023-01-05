@@ -8,7 +8,7 @@ import os.path as osp
 
 
 def visualize():
-    path = './probs_train_.csv'
+    path = './probs_train.csv'
     if not osp.exists(path):
         raise ValueError
         # print("file probs_train not exist")
@@ -39,7 +39,6 @@ def visualize():
             df_imgs_misclass = pd.DataFrame({'id': imgs_names, 'pred_class': pred_classes, 'true_class': true_classes})
             df_imgs_misclass.to_csv('mis_images.csv', index=False)
         print(min_true, max_true, min_false, max_false)
-        print(dict_img_weight['D040122@024051W0019145455F00093433I02K42842169'])
     return dict_img_weight
 
 # visualize()

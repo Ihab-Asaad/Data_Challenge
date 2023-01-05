@@ -202,9 +202,9 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
 
     imgs_weights_dict = visualize()
     labels_list, imgs_weights = [],[]
-    for i, (imgs, classes, imgs_names_batch) in enumerate(loader_weights):
+    for ii, (imgs, classes, imgs_names_batch) in enumerate(loader_weights):
         labels_list.extend(classes)
-        imgs_weights.extend([imgs_weights_dict[i] for i in imgs_names_batch])
+        imgs_weights.extend([imgs_weights_dict[path_img] for path_img in imgs_names_batch])
     labels = torch.LongTensor(labels_list)
     print(len(imgs_weights))
     #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
@@ -348,8 +348,6 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
-        if i ==0: 
-            continue
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
@@ -457,11 +455,11 @@ def main(args):
                 format(epoch, top1, best_top1, ' *' if is_best else ''))
             
 
-    # path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
-    #             '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
-    #             '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
-    #             '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
-    #             '/content/Data_Challenge/datachallenge/logs/test_loss_4']
+    path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
+                '/content/Data_Challenge/datachallenge/logs/test_loss_4']
                 # "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
                 # "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
                 # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
