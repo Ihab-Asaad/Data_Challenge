@@ -195,15 +195,18 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
         # T.ToTensor(),
         # normalizer,
     ])
+    print(train_set[0][0])
+    loader_weights = DataLoader(
+        Preprocessor(train_set, root = images_dir, transform=train_transformer),
+        batch_size = batch_size, num_workers=workers, shuffle=False)
 
-    loader = DataLoader(Preprocessor(train_set, root=images_dir,transform=train_transformer))
     imgs_weights_dict = visualize()
     labels_list, imgs_weights = [],[]
-    for _, label, img_name in loader:
-        # print(img_name)
-        labels_list.append(label)
-        imgs_weights.append(imgs_weights_dict[img_name[0]])
+    for i, (imgs, classes, imgs_names_batch) in enumerate(loader_weights):
+        labels_list.extend(classes)
+        imgs_weights.extend([imgs_weights_dict[i] for i in imgs_names_batch])
     labels = torch.LongTensor(labels_list)
+    print(len(imgs_weights))
     #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
     # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
     sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = len(labels), replacement = True)
@@ -345,6 +348,8 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
+        if i ==0: 
+            continue
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
