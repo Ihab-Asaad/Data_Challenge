@@ -348,6 +348,7 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
+        break
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
@@ -459,12 +460,12 @@ def main(args):
                 '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
                 '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
                 '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_4']
-                # "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
-                # "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
-                # "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
-                # "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
-                # "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
+                '/content/Data_Challenge/datachallenge/logs/test_loss_4', \
+                "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
+                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
+                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
+                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
+                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
     # paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
     #             "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
     #             "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
@@ -480,11 +481,11 @@ def main(args):
     # # print("Train:") #
     # # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
     
-    print("All data:") #
-    evaluator.evaluate(alldata_loader, ensemble = True, paths_ids = paths_ids)
+    # print("All data:") #
+    # evaluator.evaluate(alldata_loader, ensemble = True, paths_ids = paths_ids)
 
-    # print("Predict:")
-    # evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
+    print("Predict:")
+    evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
         
     # # Final test
     # print('Test with best model:')

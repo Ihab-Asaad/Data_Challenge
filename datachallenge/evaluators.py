@@ -44,7 +44,7 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
     # imgs_names_ = torch.cat([x for x in imgs_names], dim = 0)
     return logits_, targets_, imgs_names
 
-def get_logits_all_test(model, data_loader, print_freq=1, device = torch.device('cpu')):
+def get_logits_all_test(model, data_loader, print_freq=100, device = torch.device('cpu')):
     model.eval()
     batch_time = AverageMeter()
     end = time.time()
@@ -177,7 +177,7 @@ class Evaluator(object):
         print("Confusion_matrix: \n", confusion_matrix)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = [], num_pred_per_model = 3):
+    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = [], num_pred_per_model = 2):
         if ensemble:
             got_first = False
             for idx, path in enumerate(paths_ids):
