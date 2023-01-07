@@ -206,10 +206,10 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
         labels_list.extend(classes)
         imgs_weights.extend([imgs_weights_dict[path_img] for path_img in imgs_names_batch])
     labels = torch.LongTensor(labels_list)
-    print(len(imgs_weights))
+    # print(len(imgs_weights))
     #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
     # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
-    sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = len(labels), replacement = True)
+    sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = 3*len(labels), replacement = True)
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=images_dir,
@@ -483,8 +483,8 @@ def main(args):
     print("All data:") #
     evaluator.evaluate(alldata_loader, ensemble = True, paths_ids = paths_ids)
 
-    print("Predict:")
-    evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
+    # print("Predict:")
+    # evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, paths_ids = paths_ids)
         
     # # Final test
     # print('Test with best model:')
