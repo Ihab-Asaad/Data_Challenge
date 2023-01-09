@@ -321,11 +321,12 @@ def main(args):
         # for model_name in models_names:
         # pass the paths of the trained models first, otherwise download from google:
         evaluator.predict(test_submit_loader, dataset.classes_str, ensemble = True, \
-        paths_ids = ['add here the path to the models saved from cv '])
+        paths_ids = args['training_configs']['path_to_models'])
         return
     if args["training_configs"]["evaluate"]:
         # metric.train(model, train_loader)
-        paths_ids = ['add here the path to the models saved from cv ']
+        paths_ids = args['training_configs']['path_to_models']
+        print(paths_ids)
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
@@ -348,7 +349,6 @@ def main(args):
     training_dataset_X, training_dataset_y = np.array(dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
-        break
         print(" Fold: ", i)
         X_train_fold, y_train_fold= list(training_dataset_X[train_index]), list(training_dataset_y[train_index])
         X_val_fold, y_val_fold = list(training_dataset_X[test_index]), list(training_dataset_y[test_index])
@@ -456,16 +456,16 @@ def main(args):
                 format(epoch, top1, best_top1, ' *' if is_best else ''))
             
 
-    path_to_models = ['/content/Data_Challenge/datachallenge/logs/test_loss_0', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_1', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_2', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_3', \
-                '/content/Data_Challenge/datachallenge/logs/test_loss_4', \
-                "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
-                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
-                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
-                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
-                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
+    # path_to_models = ['1Qajyh0DLb4PlEQ2W5H29LiSoyRPeR8CL&confirm=t', \
+    #             '1zbRMjmk7I0V4Wupla7g3d-eVxbXRg4LA&confirm=t', \
+    #             '1Au0w6ZxY-0BRN631vZFtmWya6UzDiaUy&confirm=t', \
+    #             '1iT-2TdDQYDbka9lf6-S40oNxVSm-Co-O&confirm=t', \
+    #             '1YgOZ_fQsGFqLHqBZwYq_6lzimqvynZsP&confirm=t', \
+    #             "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
+    #             "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
+    #             "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
+    #             "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
+    #             "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
     # paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
     #             "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
     #             "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
@@ -504,6 +504,7 @@ if __name__ == '__main__':
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
         args = yaml.safe_load(file)
+    # print(type(args['training_configs']['path_to_models'][0]))
     main(args)
 
     # check: 
