@@ -20,11 +20,11 @@ pip install -e .
 
  to install the project in editable mode and install all the required libraries in 'requirement.txt'.
 
-# Models:
 
-# Evaluating & Testing:
+# Evaluating & Testing
 
 To evaluate on the dataset (or a portion of it), you have to change the 'evaluate' key in .yaml file to True (review the main_cv.py to check how the evaluation is done when we don't train our models)
+
 To predict on the dataset from kaggle, you have to change the 'predict' key in .yaml file to True will making 'evaluate' False.
 
 We trained 10 models which will be downloaded from google drive after running:
@@ -34,15 +34,20 @@ python datachallenge/main_cv.py
 
 # Training
 
-To train your model: first update the 'config.yaml' file and then run:
+In this code, we train k models specified by 'folds' in .yaml file (default is 3 folds when 'cv': False).
 
- ```shell
-python datachallenge/main.py
+To train your model: 
+
+1. Choose the architecture you want by chaning the 'arch' key in .yaml file.
+
+2. Set 'evaluate' & 'predict' keys to False in .yaml file. 
+
+2. Change the other hyperparameters in .yaml file.
+
+3 run 
+```shell
+python datachallenge/main_cv.py
 ```
 
-The best model according to the chosen metrics will be saved in log file in the path defined in 'config.yaml' file 
-
-Till now we don't support the command line. and our tests are empty.
-
-
-# Examples
+For each fold:
+The best model according to the chosen metric (here we choose accuracy) will be saved in 'logs_dir' defined in 'config.yaml' file 
