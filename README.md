@@ -11,17 +11,29 @@ At least 80% of your data must be classified (i.e., they should have a label oth
 The quality of your model will be assessed through two metrics : the accuracy/purity and the precision (both should be at >85% on the classified data).
 
 # Installation
-Installation in editable mode (now for our team only):
-After cloning the project, type: 
+Installation in editable mode:
+After cloning the project, change the folder to Dat_Challenge folder and type: 
 
 ```shell
 pip install -e .
 ```
 
- to install the project in editable mode.
-Inside the file 'requirement.txt' you can add your libraries.
+ to install the project in editable mode and install all the required libraries in 'requirement.txt'.
+
+# Models:
+
+# Evaluating & Testing:
+
+To evaluate on the dataset (or a portion of it), you have to change the 'evaluate' key in .yaml file to True (review the main_cv.py to check how the evaluation is done when we don't train our models)
+To predict on the dataset from kaggle, you have to change the 'predict' key in .yaml file to True will making 'evaluate' False.
+
+We trained 10 models which will be downloaded from google drive after running:
+```shell
+python datachallenge/main_cv.py
+```
 
 # Training
+
 To train your model: first update the 'config.yaml' file and then run:
 
  ```shell
