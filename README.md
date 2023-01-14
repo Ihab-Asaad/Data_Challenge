@@ -42,9 +42,9 @@ To train your model:
 
 2. Set 'evaluate' & 'predict' keys to False in .yaml file. 
 
-2. Change the other hyperparameters in .yaml file.
+3. Change the other hyperparameters in .yaml file.
 
-3 run 
+4. Run 
 ```shell
 python datachallenge/main_cv.py
 ```

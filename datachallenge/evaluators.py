@@ -177,7 +177,7 @@ class Evaluator(object):
         print("Confusion_matrix: \n", confusion_matrix)
         return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = [], num_pred_per_model = 2):
+    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = [], num_pred_per_model = 5):
         if ensemble:
             got_first = False
             for idx, path in enumerate(paths_ids):
@@ -209,6 +209,8 @@ class Evaluator(object):
             df.to_csv('submission_ensemble.csv', index=False)
             df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
             df_probs.to_csv('probs.csv', index=False)
+            df_conf = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()], 'confidence_level': [logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
+            df_conf.to_csv('submission_ensemble_confidence.csv', index=False)
         else:
             imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
             logits_soft = nn.Softmax(dim=1)(logits)
