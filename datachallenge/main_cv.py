@@ -38,7 +38,8 @@ def get_data(name, cross_val, num_folds , val_split, test_split, data_dir, combi
     dataset = datasets.create(name, extract_to, val_split= val_split, test_split= test_split, download = True)
 
     # create test dataset, this is the unlabeled data to be submitted:
-    dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
+    # dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
+    dataset_test = datasets.create('test_data', extract_to, download = True)
 
     return dataset, dataset_test, dataset.num_classes
 
