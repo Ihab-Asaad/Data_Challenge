@@ -1,4 +1,6 @@
 from __future__ import print_function, absolute_import
+from kaggle.api.kaggle_api_extended import KaggleApi
+import kaggle
 import os
 import os.path as osp
 import requests
@@ -14,16 +16,15 @@ from collections import Counter
 
 user_name = 'ihabasaad'
 key = '7e284af09589e68770a3d479ef215d07'
-if user_name =='':
+if user_name == '':
     raise KeyError("enter you kaggle account first")
 
 os.environ["KAGGLE_USERNAME"] = user_name
 os.environ["KAGGLE_KEY"] = key
-import kaggle
-from kaggle.api.kaggle_api_extended import KaggleApi
+
 
 class STM_DATA():
-    def __init__(self, extract_to=None, val_split= 0.15, test_split= 0.2, download_to =None, google_id = None, download=True):
+    def __init__(self, extract_to=None, val_split=0.15, test_split=0.2, download_to=None, google_id=None, download=True):
         if google_id == None:
             google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU&confirm=t"
         self.id = google_id
@@ -45,10 +46,10 @@ class STM_DATA():
 
         self.summary()
 
-    def _check_integrity(self): # name 'images' as it is in your zip: 'train'
+    def _check_integrity(self):  # name 'images' as it is in your zip: 'train'
         return osp.isdir(osp.join(self.extract_to, 'train')) and \
-               osp.isfile(osp.join(self.extract_to, 'meta.json')) and \
-               osp.isfile(osp.join(self.extract_to, 'splits.json'))
+            osp.isfile(osp.join(self.extract_to, 'meta.json')) and \
+            osp.isfile(osp.join(self.extract_to, 'splits.json'))
 
     # def download(self):
     #     if osp.isfile('./stm_data.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
@@ -63,14 +64,15 @@ class STM_DATA():
     #         zip_ref.extractall(self.extract_to)
 
     def download(self):
-        if osp.isfile('./msiam-sigma-dc-2223.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
+        # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.
+        if osp.isfile('./msiam-sigma-dc-2223.zip'):
             print("File already downloaded...")
             return
 
         api = KaggleApi()
         api.authenticate()
         api.competition_download_files('msiam-sigma-dc-2223',
-                              path='./', quiet = False)
+                                       path='./', quiet=False)
         with zipfile.ZipFile('./msiam-sigma-dc-2223.zip', 'r') as zip_ref:
             zip_ref.extractall(self.extract_to)
 
@@ -108,7 +110,7 @@ class STM_DATA():
         else:
             dict_img_class = dict()
             with open(path, 'r') as file:
-                image_class = pd.read_csv(file, skiprows=0, delimiter = '\n')
+                image_class = pd.read_csv(file, skiprows=0, delimiter='\n')
                 for i in range(len(image_class)):
                     row = image_class.iloc[i, 0]
                     img_name, true_class = row.split(',')
@@ -116,12 +118,14 @@ class STM_DATA():
                     true_class = self.classes_str.index(int(true_class))
                     dict_img_class[img_name_jpg] = true_class
             return dict_img_class
+
     def scan(self):
         path_to_images = osp.join(self.extract_to, 'train_new')
         self.images_dir = path_to_images
-        list_dirs = sorted(os.listdir(path_to_images)) # this should contains the classes sorted:
+        # this should contains the classes sorted:
+        list_dirs = sorted(os.listdir(path_to_images))
         # classes string is the required output according to the problem:
-        self.classes_str = [1,20,21,22,32,41,44,45]
+        self.classes_str = [1, 20, 21, 22, 32, 41, 44, 45]
         self.num_classes = len(self.classes_str)
         # class_path is a list of length (num_classes), each list is of length number of images in each class:
         class_paths = [[] for _ in range(self.num_classes)]
@@ -129,14 +133,14 @@ class STM_DATA():
         dict_imgname_class = self.extract_csv(path_to_csv)
         size = 0
         # X is a list containing the paths of all images in dataset, y contains their labels
-        X,y = [],[]
-        size =len(os.listdir(path_to_images))
+        X, y = [], []
+        size = len(os.listdir(path_to_images))
         # print(path_to_images)
         # for i, img_name in enumerate(path_to_images):
         for img_name in os.listdir(path_to_images):
             # class_i = i
             # img_paths = osp.join(path_to_images, class_path)
-            
+
             img_full_path = osp.join(path_to_images, img_name)
             # print(img_name)
             class_i = dict_imgname_class[img_name]
@@ -151,7 +155,7 @@ class STM_DATA():
         # write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
     def split(self):
-        
+
         # if cross_val:
         #     X,y = self.X, self.y
         #     X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
@@ -159,16 +163,18 @@ class STM_DATA():
         #     kf = KFold(n_splits=3, random_state=42, shuffle=True)
         #     for i, (train_index, test_index) in enumerate(kf.split(X)):
         #         pass
-        # else: 
-        X,y = self.X, self.y
-        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
-        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
+        # else:
+        X, y = self.X, self.y
+        X_train_val, X_test, y_train_val, y_test = train_test_split(
+            X, y, test_size=self.test_split, random_state=0)
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train_val, y_train_val, test_size=self.val_split, random_state=42)
         # Save meta information into a json file
         # splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
         #         'X_test': X_test,'y_test': y_test}
         # write_json(splits, osp.join(self.extract_to, 'splits.json'))
 
-        self.X_trainval= X_train_val
+        self.X_trainval = X_train_val
         self.y_trainval = y_train_val
         self.X_train = X_train
         self.y_train = y_train
@@ -178,7 +184,8 @@ class STM_DATA():
         self.y_test = y_test
         self.weights_trainval = list(Counter(y_train_val).values())
         self.weights_train = list(Counter(y_train).values())
-    def summary(self, verbose = True):
+
+    def summary(self, verbose=True):
         if verbose:
             print(self.__class__.__name__, "dataset loaded")
             print("  Subset   | # images")
@@ -189,6 +196,7 @@ class STM_DATA():
             print("  val      | {:5d}".format(len(self.X_val)))
             print("  trainval | {:5d}".format(len(self.X_trainval)))
             print("  test     | {:5d}".format(len(self.X_test)))
+
 
 if __name__ == "__main__":
     print("stm_data")

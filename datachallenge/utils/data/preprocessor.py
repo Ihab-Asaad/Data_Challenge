@@ -27,7 +27,7 @@ class Preprocessor(object):
         if isinstance(self.dataset, tuple):
             X_data = self.dataset[0]
             y_data = self.dataset[1]
-            image_path , class_i = X_data[index], y_data[index]
+            image_path, class_i = X_data[index], y_data[index]
             # fpath = fname
             # if self.root is not None:
             #     fpath = osp.join(self.root, fname)
@@ -36,11 +36,12 @@ class Preprocessor(object):
             if self.transform is not None:
                 img = self.transform(img)
             return img, class_i, img_name
-        else: # for test data
+        else:  # for test data
             X_data = self.dataset
             image_path = X_data[index]
             img = Image.open(image_path).convert('RGB')
             if self.transform is not None:
                 img = self.transform(img)
-            img_name = image_path.split('/')[-1].split('.')[0] # return list of one element
+            # return list of one element
+            img_name = image_path.split('/')[-1].split('.')[0]
             return img, img_name

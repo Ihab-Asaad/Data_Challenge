@@ -21,7 +21,7 @@ net:
 
 # training
 training:
-    epochs : 15
+    epochs : 25
     batch_size: 16 #  64( for one gpu), and 256 is used with 4 gpus
     workers : 2 # the number of processes that generate batches in parallel
     features: 256 # number of features after base model
@@ -64,6 +64,6 @@ metric_learning:
     dist_metric: 'euclidean' # ['euclidean', 'kissme']
 
 logging:
-    working_dir: '/content/Data_Challenge/datachallenge'
-    data_dir: '/content/Data_Challenge/datachallenge/datasets/dataset' # + dataset_name : where to store downloaded data
-    logs_dir: '/content/Data_Challenge/datachallenge/logs/test_loss' # where to save training and testing logs
+    working_dir: '/datachallenge'
+    data_dir: '/datachallenge/datasets/dataset' # + dataset_name : where to store downloaded data
+    logs_dir: '/datachallenge/logs/test_loss' # where to save training and testing logs

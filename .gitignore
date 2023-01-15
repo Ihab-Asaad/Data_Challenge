@@ -17,3 +17,4 @@ logs/checkpoint.pth.tar
 datachallenge/utils/data/mnist/
 datachallenge/stm_data.zipwfzmy3bitmp
 datachallenge/loss/__pycache__/
+*vscode/
