@@ -1,6 +1,4 @@
 from __future__ import print_function, absolute_import
-from kaggle.api.kaggle_api_extended import KaggleApi
-import kaggle
 import os
 import os.path as osp
 import requests
@@ -14,6 +12,8 @@ from datachallenge.utils.serialization import write_json, read_json
 from sklearn.model_selection import train_test_split
 from collections import Counter
 
+
+
 user_name = 'ihabasaad'
 key = '7e284af09589e68770a3d479ef215d07'
 if user_name == '':
@@ -22,6 +22,9 @@ if user_name == '':
 os.environ["KAGGLE_USERNAME"] = user_name
 os.environ["KAGGLE_KEY"] = key
 
+
+from kaggle.api.kaggle_api_extended import KaggleApi
+import kaggle
 
 class STM_DATA():
     def __init__(self, extract_to=None, val_split=0.15, test_split=0.2, download_to=None, google_id=None, download=True):

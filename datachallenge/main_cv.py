@@ -262,7 +262,7 @@ def create_model(args, log_path=''):
     global best_top1
     start_epoch = 0
     best_top1 = 0
-    if args["training_configs"]["resume"]!='' or log_path != '':
+    if args["training_configs"]["resume"]!='':
         print("Load from saved model...")
         # if osp.exists(args["training_configs"]["resume"]):
         if osp.exists(log_path):
@@ -370,7 +370,6 @@ def main(args):
         dataset.X), np.array(dataset.y)
     path_to_models = []
     for i, (train_index, test_index) in enumerate(kf.split(training_dataset_X, training_dataset_y)):
-        break
         print(" Fold: ", i)
         X_train_fold, y_train_fold = list(training_dataset_X[train_index]), list(
             training_dataset_y[train_index])

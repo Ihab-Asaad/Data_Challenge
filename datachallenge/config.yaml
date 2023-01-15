@@ -65,5 +65,5 @@ metric_learning:
 
 logging:
     working_dir: '/datachallenge'
-    data_dir: '/datachallenge/datasets/dataset' # + dataset_name : where to store downloaded data
-    logs_dir: '/datachallenge/logs/test_loss' # where to save training and testing logs
+    data_dir: './datasets/dataset' # + dataset_name : where to store downloaded data
+    logs_dir: './logs/test_loss' # where to save training and testing logs
