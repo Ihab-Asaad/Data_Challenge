@@ -4,6 +4,7 @@ import os.path as osp
 import requests
 import zipfile
 import gdown
+import pandas as pd
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from datachallenge.utils.osutils import mkdir_if_missing
 from datachallenge.utils.serialization import write_json, read_json
@@ -100,7 +101,7 @@ class STM_DATA():
     #     meta = {'name': 'STM_Dataset', 'num_classes': self.num_classes,
     #             'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
     #     write_json(meta, osp.join(self.extract_to, 'meta.json'))
-    def extract_csv(path):
+    def extract_csv(self, path):
         if not osp.exists(path):
             raise ValueError
         # print("file probs_train not exist")
@@ -111,7 +112,9 @@ class STM_DATA():
                 for i in range(len(image_class)):
                     row = image_class.iloc[i, 0]
                     img_name, true_class = row.split(',')
-                    dict_img_class[img_name] = true_class
+                    img_name_jpg = img_name+'.jpg'
+                    true_class = self.classes_str.index(int(true_class))
+                    dict_img_class[img_name_jpg] = true_class
             return dict_img_class
     def scan(self):
         path_to_images = osp.join(self.extract_to, 'train_new')
@@ -123,20 +126,23 @@ class STM_DATA():
         # class_path is a list of length (num_classes), each list is of length number of images in each class:
         class_paths = [[] for _ in range(self.num_classes)]
         path_to_csv = osp.join(self.extract_to, 'new_train.csv')
-        dict_imgname_class = extract_csv(path_to_csv)
+        dict_imgname_class = self.extract_csv(path_to_csv)
         size = 0
         # X is a list containing the paths of all images in dataset, y contains their labels
         X,y = [],[]
         size =len(os.listdir(path_to_images))
-        for i, img_name in enumerate(path_to_images):
+        # print(path_to_images)
+        # for i, img_name in enumerate(path_to_images):
+        for img_name in os.listdir(path_to_images):
             # class_i = i
             # img_paths = osp.join(path_to_images, class_path)
             
             img_full_path = osp.join(path_to_images, img_name)
+            # print(img_name)
             class_i = dict_imgname_class[img_name]
             class_paths[class_i].append(img_full_path)
             X.append(class_paths[class_i])
-            y.append([class_i])
+            y.append(class_i)
         self.X = X
         self.y = y
         self.size = size
