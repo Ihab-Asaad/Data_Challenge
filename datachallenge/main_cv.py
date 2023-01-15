@@ -201,25 +201,25 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
         Preprocessor(train_set, root = images_dir, transform=train_transformer),
         batch_size = batch_size, num_workers=workers, shuffle=False)
 
-    imgs_weights_dict = visualize()
-    labels_list, imgs_weights = [],[]
-    for ii, (imgs, classes, imgs_names_batch) in enumerate(loader_weights):
-        labels_list.extend(classes)
-        imgs_weights.extend([imgs_weights_dict[path_img] for path_img in imgs_names_batch])
-    labels = torch.LongTensor(labels_list)
+    # imgs_weights_dict = visualize()
+    # labels_list, imgs_weights = [],[]
+    # for ii, (imgs, classes, imgs_names_batch) in enumerate(loader_weights):
+    #     labels_list.extend(classes)
+    #     imgs_weights.extend([imgs_weights_dict[path_img] for path_img in imgs_names_batch])
+    # labels = torch.LongTensor(labels_list)
     # print(len(imgs_weights))
     #balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
     # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
-    sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = 3*len(labels), replacement = True)
+    # sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = 3*len(labels), replacement = True)
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=images_dir,
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
-        # shuffle=True,
+        shuffle=True,
         # shuffle = True,
         # sampler=balanced_sampler, 
-        sampler = sampler,
+        # sampler = sampler,
         pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         drop_last=True) 
 

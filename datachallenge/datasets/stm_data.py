@@ -141,14 +141,14 @@ class STM_DATA():
             # print(img_name)
             class_i = dict_imgname_class[img_name]
             class_paths[class_i].append(img_full_path)
-            X.append(class_paths[class_i])
+            X.append(img_full_path)
             y.append(class_i)
         self.X = X
         self.y = y
         self.size = size
-        meta = {'name': 'STM_Dataset', 'num_classes': self.num_classes,
-                'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
-        write_json(meta, osp.join(self.extract_to, 'meta.json'))
+        # meta = {'name': 'STM_Dataset', 'num_classes': self.num_classes,
+        #         'dataset_size' : self.size, 'images': class_paths, 'X': self.X,'y':self.y}
+        # write_json(meta, osp.join(self.extract_to, 'meta.json'))
 
     def split(self):
         
@@ -164,9 +164,9 @@ class STM_DATA():
         X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=self.test_split, random_state=0)
         X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=self.val_split, random_state=42)
         # Save meta information into a json file
-        splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
-                'X_test': X_test,'y_test': y_test}
-        write_json(splits, osp.join(self.extract_to, 'splits.json'))
+        # splits = {'X_train': X_train, 'y_train': y_train,'X_val': X_val,'y_val':y_val,
+        #         'X_test': X_test,'y_test': y_test}
+        # write_json(splits, osp.join(self.extract_to, 'splits.json'))
 
         self.X_trainval= X_train_val
         self.y_trainval = y_train_val
