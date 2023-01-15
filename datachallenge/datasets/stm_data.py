@@ -47,9 +47,10 @@ class STM_DATA():
         self.summary()
 
     def _check_integrity(self):  # name 'images' as it is in your zip: 'train'
-        return osp.isdir(osp.join(self.extract_to, 'train')) and \
-            osp.isfile(osp.join(self.extract_to, 'meta.json')) and \
-            osp.isfile(osp.join(self.extract_to, 'splits.json'))
+        return osp.isdir(osp.join(self.extract_to, 'train_new'))
+            #  and \
+            # osp.isfile(osp.join(self.extract_to, 'meta.json')) and \
+            # osp.isfile(osp.join(self.extract_to, 'splits.json'))
 
     # def download(self):
     #     if osp.isfile('./stm_data.zip'): # custom check_integrity from custom Dataset class, used to check if 'images' folder, 'meta.json', 'splits.json' exist.

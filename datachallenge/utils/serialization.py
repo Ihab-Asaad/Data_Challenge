@@ -51,7 +51,7 @@ def load_checkpoint(fpath):
     #     raise ValueError("=> No checkpoint found at '{}'".format(fpath))
 
     if osp.isfile(fpath):
-        checkpoint = torch.load(fpath)
+        checkpoint = torch.load(fpath, map_location=torch.device('cpu'))
         print("=> Loaded checkpoint '{}'".format(fpath))
         return checkpoint
     else:
