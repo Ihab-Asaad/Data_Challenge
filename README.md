@@ -23,6 +23,24 @@ pip install -e .
 # System Specification
 Ubuntu 18.04.6. For Windows users, you have to change '/' with '\\' in evaluator.py and in .yaml file.
 
+In case you don't have a GPU, just change:
+```shell
+checkpoint = torch.load(fpath)
+```
+to 
+```shell
+checkpoint = torch.load(fpath, map_location=torch.device('cpu'))
+```
+You may need also to change:
+```shell
+ loss = self.criterion(outputs, targets) 
+```
+to
+ ```shell
+ loss = self.criterion(outputs, targets.type(torch.LongTensor)) 
+```
+
+
 # Evaluating & Testing
 
 To evaluate on the dataset (or a portion of it), you have to change the 'evaluate' key in .yaml file to True (review the main_cv.py to check how the evaluation is done when we don't train our models)
