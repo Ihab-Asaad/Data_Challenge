@@ -21,7 +21,7 @@ pip install -e .
  to install the project in editable mode and install all the required libraries in 'requirement.txt'.
 
 # System Specification
-Ubuntu 18.04.6. For Windows users, you have to switch '/' with '\' in evaluator.py and in .yaml file.
+Ubuntu 18.04.6. For Windows users, you have to switch '/' with '\\' in evaluator.py and in .yaml file.
 
 # Evaluating & Testing
 
