@@ -12,7 +12,7 @@ The quality of your model will be assessed through two metrics : the accuracy/pu
 
 # Installation
 Installation in editable mode:
-After cloning the project, change the folder to Dat_Challenge folder and type: 
+After cloning the project, change the folder to Data_Challenge folder and type: 
 
 ```shell
 pip install -e .
@@ -20,6 +20,8 @@ pip install -e .
 
  to install the project in editable mode and install all the required libraries in 'requirement.txt'.
 
+# System Specification
+Ubuntu 18.04.6. For Windows users, you have to switch '/' with '\\' in evaluator.py, and in .yaml file with '\'.
 
 # Evaluating & Testing
 
