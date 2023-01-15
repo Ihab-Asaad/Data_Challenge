@@ -3,3 +3,6 @@ https://stackoverflow.com/questions/32688688/how-to-write-setup-py-to-include-a-
 
 Link to google drive where the training data uploaded:
 https://drive.google.com/file/d/1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU/view?usp=share_link
+
+
+# check the libraries versions: pip freeze | grep libname
