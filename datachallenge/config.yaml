@@ -4,6 +4,9 @@ description: "Softmax loss classification"
 method:
     type: 'deep_learning' # machine_learning : using machine learning methods
     # deep_learning : using deep neural networks only
+    taks: 'One Image' # 'Training'
+    # if 'One Image' is chosen, the code will print the label with confidence of this image
+    # if 'Training'
 
 dataset:
     name : 'stm_data' # 'ex1_data','ex2_data',...

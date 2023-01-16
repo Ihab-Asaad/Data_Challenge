@@ -85,7 +85,10 @@ class Trainer(BaseTrainer):
 
         outputs = self.model(inputs)
         if isinstance(self.criterion, torch.nn.CrossEntropyLoss) and not self.customloss:
-            loss = self.criterion(outputs, targets)  # check the loss device ??
+            if self.device == torch.device('cpu'):
+                loss = self.criterion(outputs, targets.type(torch.LongTensor)) # for cpu
+            else:
+                loss = self.criterion(outputs, targets) # for GPU, will be fixed later
             prec = accuracy(outputs, targets)
             # prec= accuracy_micro(outputs, targets)
 

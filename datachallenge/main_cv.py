@@ -171,10 +171,10 @@ def create_model(args, log_path=''):
         print(log_path)
         if log_path!='' and osp.exists(log_path):
             checkpoint = load_checkpoint(
-                osp.join(log_path, 'model_best.pth.tar'))
+                osp.join(log_path, 'model_best.pth.tar'), device = args["device"])
         else:
             if osp.exists(args["training_configs"]["resume"]):
-                checkpoint = load_checkpoint(args["training_configs"]["resume"])
+                checkpoint = load_checkpoint(args["training_configs"]["resume"], device = args["device"])
             else:
                 print("Model or path ot exist...Creating new model")
                 model = models.create(args["net"]["arch"], num_features=args["training"]["features"],

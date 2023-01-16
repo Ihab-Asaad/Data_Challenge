@@ -39,7 +39,7 @@ def save_checkpoint(state, is_best, fpath='checkpoint.pth.tar'):
         shutil.copy(fpath, osp.join(osp.dirname(fpath), 'model_best.pth.tar'))
 
 
-def load_checkpoint(fpath):
+def load_checkpoint(fpath, device = torch.device('cpu')):
     """
     Load model from path if exist, otherwise raise an error.
     """
@@ -51,7 +51,10 @@ def load_checkpoint(fpath):
     #     raise ValueError("=> No checkpoint found at '{}'".format(fpath))
 
     if osp.isfile(fpath):
-        checkpoint = torch.load(fpath)
+        if device == torch.device('cpu'):
+            checkpoint = torch.load(fpath, map_location=torch.device('cpu'))
+        else:
+            checkpoint = torch.load(fpath)
         # checkpoint = torch.load(fpath, map_location=torch.device('cpu'))
         print("=> Loaded checkpoint '{}'".format(fpath))
         return checkpoint

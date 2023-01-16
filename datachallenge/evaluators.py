@@ -142,14 +142,14 @@ class Evaluator(object):
             got_first = False
             for idx, path in enumerate(paths_ids):
                 if osp.exists(path):
-                    checkpoint = load_checkpoint(paths_ids[idx])
+                    checkpoint = load_checkpoint(paths_ids[idx], device = self.device)
                 else:
                     # download from google drive:
                     #
                     self.download(
                         paths_ids[idx], save_to='/content/Data_Challenge/datachallenge/downloaded_model.tar')
                     checkpoint = load_checkpoint(
-                        '/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                        '/content/Data_Challenge/datachallenge/downloaded_model.tar', device = self.device)
                 # model = models.create("resnet50", num_features=256,
                 #           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
@@ -192,13 +192,13 @@ class Evaluator(object):
             got_first = False
             for idx, path in enumerate(paths_ids):
                 if osp.exists(path):
-                    checkpoint = load_checkpoint(paths_ids[idx])
+                    checkpoint = load_checkpoint(paths_ids[idx], device = self.device)
                 else:
                     # download from google drive:
                     self.download(
                         paths_ids[idx], save_to='/content/Data_Challenge/datachallenge/downloaded_model.tar')
                     checkpoint = load_checkpoint(
-                        '/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                        '/content/Data_Challenge/datachallenge/downloaded_model.tar', device = self.device)
                 model_configs = checkpoint['configs']
                 # model_configs["name"] = "efficientnet_b5"
                 model = models.create(**model_configs).to(self.device)
