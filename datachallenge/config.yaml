@@ -5,14 +5,14 @@ method:
     type: 'deep_learning' # machine_learning : using machine learning methods
     # deep_learning : using deep neural networks only
     taks: 'One Image' # 'Training'
-    # if 'One Image' is chosen, the code will print the label with confidence of this image
-    # if 'Training'
+    # if 'IO' is chosen, the code will print the label with confidence of this image
+    # if 'TE' then you can use the configs down with training and evaluation process.
 
 dataset:
-    name : 'stm_data' # 'ex1_data','ex2_data',...
+    name : 'stm_data' # 
     extract_to: ''
     user_name: 'ihabasaad'
-    key: ''
+    key: '7e284af09589e68770a3d479ef215d07'
 
 net: 
     arch : 'resnet50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
