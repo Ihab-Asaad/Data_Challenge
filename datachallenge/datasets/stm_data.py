@@ -12,26 +12,29 @@ from datachallenge.utils.serialization import write_json, read_json
 from sklearn.model_selection import train_test_split
 from collections import Counter
 
-
 user_name = 'ihabasaad'
-key = '7e284af09589e68770a3d479ef215d07'
-if user_name == '':
-    raise KeyError("enter you kaggle account first")
+key = ''
+# if user_name == '':
+#     raise KeyError("enter you kaggle account first")
 
 os.environ["KAGGLE_USERNAME"] = user_name
 os.environ["KAGGLE_KEY"] = key
-
 from kaggle.api.kaggle_api_extended import KaggleApi
 
 
 class STM_DATA():
-    def __init__(self, extract_to=None, val_split=0.15, test_split=0.2, download_to=None, google_id=None, download=True):
+    def __init__(self, extract_to=None, val_split=0.15, test_split=0.2, download_to=None, google_id=None, download=True, user_name = '', key = ''):
         if google_id == None:
             google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU&confirm=t"
         self.id = google_id
         self.val_split = val_split
         self.test_split = test_split
         self.extract_to = extract_to
+        if user_name =='' or key =='':
+            raise NameError("user_name of key for Kaggle account not exist, please fill them in .yaml file")
+        os.environ["KAGGLE_USERNAME"] = user_name
+        os.environ["KAGGLE_KEY"] = key
+
         if download_to == None:
             download_to = extract_to
         self.download_to = download_to

@@ -8,6 +8,8 @@ method:
 dataset:
     name : 'stm_data' # 'ex1_data','ex2_data',...
     extract_to: ''
+    user_name: 'ihabasaad'
+    key: ''
 
 net: 
     arch : 'resnet50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights

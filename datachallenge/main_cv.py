@@ -25,15 +25,15 @@ from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
 from sklearn.model_selection import StratifiedKFold
 
 
-def get_data(name, val_split, test_split, data_dir):
+def get_data(name, val_split, test_split, data_dir, user_name = '', key = ''):
     extract_to = osp.join(data_dir, name)
     # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
     dataset = datasets.create(
-        name, extract_to, val_split=val_split, test_split=test_split, download=True)
+        name, extract_to, val_split=val_split, test_split=test_split, download=True, user_name = user_name, key = key)
 
     # create test dataset, this is the unlabeled data to be submitted:
-    dataset_test = datasets.create('test_data', extract_to, download=True)
+    dataset_test = datasets.create('test_data', extract_to, download=True, user_name = user_name, key = key)
     return dataset, dataset_test, dataset.num_classes
 
 
@@ -215,7 +215,7 @@ def main(args):
 
     dataset, dataset_test, num_classes = \
         get_data(args["dataset"]["name"], args["training_configs"]["val_split"],
-                 args["training_configs"]["test_split"], args["logging"]["data_dir"])
+                 args["training_configs"]["test_split"], args["logging"]["data_dir"], args["dataset"]["user_name"], args["dataset"]["key"])
     args["num_classes"] = dataset.num_classes
     args["device"] = device
     # add ensemble to .yaml file
