@@ -168,13 +168,18 @@ def create_model(args, log_path=''):
     if args["training_configs"]["resume"] != '':
         print("Load from saved model...")
         # if osp.exists(args["training_configs"]["resume"]):
-        if osp.exists(log_path):
+        print(log_path)
+        if log_path!='' and osp.exists(log_path):
             checkpoint = load_checkpoint(
                 osp.join(log_path, 'model_best.pth.tar'))
         else:
             if osp.exists(args["training_configs"]["resume"]):
-                checkpoint = load_checkpoint(
-                    osp.join(args["training_configs"]["resume"], 'model_best.pth.tar'))
+                checkpoint = load_checkpoint(args["training_configs"]["resume"])
+            else:
+                print("Model or path ot exist...Creating new model")
+                model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
+                              dropout=args["training"]["dropout"], num_classes=args["num_classes"]).to(args["device"])  # no need to use .to(device) as below we are using DataParallel
+                return model
         model_configs = checkpoint['configs']
         model = models.create(**model_configs).to(args["device"])
         model.load_state_dict(checkpoint['state_dict'])
