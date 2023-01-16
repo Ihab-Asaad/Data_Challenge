@@ -168,7 +168,6 @@ def create_model(args, log_path=''):
     if args["training_configs"]["resume"] != '':
         print("Load from saved model...")
         # if osp.exists(args["training_configs"]["resume"]):
-        print(log_path)
         if log_path!='' and osp.exists(log_path):
             checkpoint = load_checkpoint(
                 osp.join(log_path, 'model_best.pth.tar'), device = args["device"])
@@ -311,7 +310,6 @@ def main(args):
         def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
             lr = initial_lr * \
                 (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
-            print(lr)
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
@@ -365,21 +363,20 @@ def predict(images_path):
             _, file_extension = os.path.splitext(file)
             if file_extension in image_extensions:
                 images.append(os.path.join(images_path, file))
-        print(images)
         
     elif os.path.isfile(images_path):
         print(images_path, "is a file.")
         images = [images_path]
-    print("here")
     test_set_submit = (images)
     test_submit_transformer = T.Compose([T.test_tranforms(args["net"]["height"], args["net"]["width"])])
     test_submit_loader = DataLoader(
             Preprocessor(test_set_submit, root='',
                     transform=test_submit_transformer),
     batch_size=1, num_workers=1, shuffle=False, pin_memory=True)
-    evaluator = Evaluator(create_model(args), device)
-    print("here")
     classes_str = [1, 20, 21, 22, 32, 41, 44, 45]
+    args["num_classes"] = len(classes_str)
+    evaluator = Evaluator(create_model(args), device)
+    
     evaluator.predict(test_submit_loader, classes_str, ensemble=True,
                         paths_ids=args['training_configs']['path_to_models'])
 

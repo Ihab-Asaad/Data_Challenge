@@ -47,7 +47,7 @@ training_configs:
     cv: True # cross validation
     folds: 5
     combine_trainval: False # if True train and val sets together for training, and val set alone for validataion.
-    resume : './logs/test_loss_0/model_best.pth.tar' # put your model path here to start training from it.
+    resume : '' # put your model path here to start training from it.
     evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
     predict: False
     path_to_models: ["1Qajyh0DLb4PlEQ2W5H29LiSoyRPeR8CL&confirm=t"]
