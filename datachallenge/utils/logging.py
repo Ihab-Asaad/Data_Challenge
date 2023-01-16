@@ -12,6 +12,7 @@ class Logger():
     and calls the write function of a given object. By default this object is sys.stdout (print (something) == sys.stdout.write(something))
     redefine the sys.stdout with object from this class gives the ability to print to file if path is provided during initializtion.
     """
+
     def __init__(self, fpath=None):
         self.console = sys.stdout
         self.file = None
@@ -29,7 +30,7 @@ class Logger():
         self.close()
 
     def write(self, msg):
-        self.console.write(msg) # sys.stdout.write()
+        self.console.write(msg)  # sys.stdout.write()
         if self.file is not None:
             self.file.write(msg)
 
@@ -43,4 +44,3 @@ class Logger():
         self.console.close()
         if self.file is not None:
             self.file.close()
-

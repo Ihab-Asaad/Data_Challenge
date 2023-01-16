@@ -14,22 +14,24 @@ import os.path as osp
 from datachallenge import models
 import gdown
 
-def get_logits_batch(model, inputs , device = torch.device('cpu'), modules=None):
+
+def get_logits_batch(model, inputs, device=torch.device('cpu'), modules=None):
     model.eval()
     inputs = inputs.to(device)
     # inputs = to_torch(inputs).to(device)
     if modules is None:
-        with torch.no_grad(): ## ??
+        with torch.no_grad():  # ??
             outputs = model(inputs).cpu()
             return outputs
 
-def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu')):
+
+def get_logits_all(model, data_loader, print_freq=1, device=torch.device('cpu')):
     model.eval()
     batch_time = AverageMeter()
     end = time.time()
-    targets , logits, imgs_names= [], [], []
+    targets, logits, imgs_names = [], [], []
     for i, (imgs, classes, imgs_names_batch) in enumerate(data_loader):
-        batch_time.update(time.time() - end) # the time of getting new batch
+        batch_time.update(time.time() - end)  # the time of getting new batch
         outputs = get_logits_batch(model, imgs, device)
         targets.append(classes)
         logits.append(outputs)
@@ -39,18 +41,19 @@ def get_logits_all(model, data_loader, print_freq=1, device = torch.device('cpu'
                   'Time {:.3f} ({:.3f})\t'
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
-    targets_ = torch.cat([x for x in targets], dim = 0)
-    logits_ = torch.cat([x for x in logits], dim = 0)
+    targets_ = torch.cat([x for x in targets], dim=0)
+    logits_ = torch.cat([x for x in logits], dim=0)
     # imgs_names_ = torch.cat([x for x in imgs_names], dim = 0)
     return logits_, targets_, imgs_names
 
-def get_logits_all_test(model, data_loader, print_freq=100, device = torch.device('cpu')):
+
+def get_logits_all_test(model, data_loader, print_freq=100, device=torch.device('cpu')):
     model.eval()
     batch_time = AverageMeter()
     end = time.time()
     logits, imgs_names = [], []
-    for i, (img, img_name) in enumerate(data_loader): # batch size here is one
-        batch_time.update(time.time() - end) # the time of getting new batch
+    for i, (img, img_name) in enumerate(data_loader):  # batch size here is one
+        batch_time.update(time.time() - end)  # the time of getting new batch
         outputs = get_logits_batch(model, img, device)
         # logits.append(np.argmax(outputs))
         logits.append(outputs)
@@ -62,18 +65,19 @@ def get_logits_all_test(model, data_loader, print_freq=100, device = torch.devic
         end = time.time()
         # logits_ = torch.cat([x for x in logits], dim=0)
     logits_ = torch.cat([x for x in logits], dim=0)
-    # logits_ = torch.FloatTensor(logits) 
+    # logits_ = torch.FloatTensor(logits)
     return imgs_names, logits_
 
-def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq=1, device = torch.device('cpu')):
+
+def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq=1, device=torch.device('cpu')):
     model1.eval()
     model2.eval()
     model3.eval()
     batch_time = AverageMeter()
     end = time.time()
     logits, imgs_names = [], []
-    for i, (img, img_name) in enumerate(data_loader): # batch size here is one
-        batch_time.update(time.time() - end) # the time of getting new batch
+    for i, (img, img_name) in enumerate(data_loader):  # batch size here is one
+        batch_time.update(time.time() - end)  # the time of getting new batch
         outputs1 = get_logits_batch(model1, img, device)
         outputs2 = get_logits_batch(model2, img, device)
         output3 = get_logits_batch(model3, img, device)
@@ -86,8 +90,9 @@ def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq
         end = time.time()
         # logits_ = torch.cat([x for x in logits], dim=0)
     print(logits)
-    logits_ = torch.IntTensor(logits)        
+    logits_ = torch.IntTensor(logits)
     return imgs_names, logits_
+
 
 def evaluate_all(logits, targets):
     acc_ = accuracy(logits, targets)
@@ -132,7 +137,7 @@ class Evaluator(object):
         self.model = model
         self.device = device
 
-    def evaluate(self, data_loader,ensemble = False, paths_ids = []):
+    def evaluate(self, data_loader, ensemble=False, paths_ids=[]):
         if ensemble:
             got_first = False
             for idx, path in enumerate(paths_ids):
@@ -140,9 +145,11 @@ class Evaluator(object):
                     checkpoint = load_checkpoint(paths_ids[idx])
                 else:
                     # download from google drive:
-                    # 
-                    self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
-                    checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                    #
+                    self.download(
+                        paths_ids[idx], save_to='/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                    checkpoint = load_checkpoint(
+                        '/content/Data_Challenge/datachallenge/downloaded_model.tar')
                 # model = models.create("resnet50", num_features=256,
                 #           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
@@ -154,30 +161,33 @@ class Evaluator(object):
                 # model = self.model
                 model.load_state_dict(checkpoint['state_dict'])
                 # model = checkpoint['model'].to(self.device)
-                logits, targets, imgs_names = get_logits_all(model, data_loader, device = self.device)
+                logits, targets, imgs_names = get_logits_all(
+                    model, data_loader, device=self.device)
                 logits_soft = nn.Softmax(dim=1)(logits)
                 if not got_first:
                     logits_final = logits_soft
                     got_first = True
                 else:
-                    logits_final = logits_final+ logits_soft
+                    logits_final = logits_final + logits_soft
             logits_final = logits_final/len(paths_ids)
         else:
-            logits_final, targets, imgs_names = get_logits_all(self.model, data_loader, device = self.device)
+            logits_final, targets, imgs_names = get_logits_all(
+                self.model, data_loader, device=self.device)
         # logits = torch.argmax(logits_final, axis = 1)
-        logits = logits_final # don't take argmax if you need top k
-        pred_idx = torch.argmax(logits_final, axis = 1)
+        logits = logits_final  # don't take argmax if you need top k
+        pred_idx = torch.argmax(logits_final, axis=1)
         probs = logits_final[pred_idx]
         # df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][pred_idx[i]].item() for i in range(len(pred_idx.tolist()))], 'pred_class': pred_idx, 'true_class': targets})
         # df_probs.to_csv('probs_train.csv', index=False)
         # logits, targets = get_logits_all(self.model, data_loader, device = self.device)
         confusion_matrix = conf_matrix(logits, targets)
-        acc_ , prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
-        print("Accuracy: ", acc_, "  Precision: ", prec_, "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
+        acc_, prec_, rec_, f1_, top2acc_ = evaluate_all(logits, targets)
+        print("Accuracy: ", acc_, "  Precision: ", prec_,
+              "  Recall: ", rec_, " F1: ", f1_, " Top2: ", top2acc_)
         print("Confusion_matrix: \n", confusion_matrix)
-        return acc_ , prec_, rec_, f1_, top2acc_, confusion_matrix
+        return acc_, prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble = False, paths_ids = [], num_pred_per_model = 5):
+    def predict(self, data_loader, classes_str, ensemble=False, paths_ids=[], num_pred_per_model=5):
         if ensemble:
             got_first = False
             for idx, path in enumerate(paths_ids):
@@ -185,8 +195,10 @@ class Evaluator(object):
                     checkpoint = load_checkpoint(paths_ids[idx])
                 else:
                     # download from google drive:
-                    self.download(paths_ids[idx], save_to = '/content/Data_Challenge/datachallenge/downloaded_model.tar')
-                    checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                    self.download(
+                        paths_ids[idx], save_to='/content/Data_Challenge/datachallenge/downloaded_model.tar')
+                    checkpoint = load_checkpoint(
+                        '/content/Data_Challenge/datachallenge/downloaded_model.tar')
                 model_configs = checkpoint['configs']
                 # model_configs["name"] = "efficientnet_b5"
                 model = models.create(**model_configs).to(self.device)
@@ -195,29 +207,34 @@ class Evaluator(object):
 
                 # model = checkpoint['model'].to(self.device)
                 for i in range(num_pred_per_model):
-                    imgs_names, logits = get_logits_all_test(model, data_loader, device = self.device)
+                    imgs_names, logits = get_logits_all_test(
+                        model, data_loader, device=self.device)
                     logits_soft = nn.Softmax(dim=1)(logits)
                     if not got_first:
                         logits_final = logits_soft
                         got_first = True
                     else:
-                        logits_final = logits_final+ logits_soft
+                        logits_final = logits_final + logits_soft
             logits_final = logits_final/(len(paths_ids)*num_pred_per_model)
-            logits = torch.argmax(logits_final, axis = 1)
+            logits = torch.argmax(logits_final, axis=1)
             probs = logits_final[logits]
-            df = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()]})
+            df = pd.DataFrame({'id': imgs_names, 'Category': [
+                              classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
-            df_probs = pd.DataFrame({'id': imgs_names, 'prob': [logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
+            df_probs = pd.DataFrame({'id': imgs_names, 'prob': [
+                                    logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
             df_probs.to_csv('probs.csv', index=False)
-            df_conf = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()], 'confidence_level': [logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
+            df_conf = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist(
+            )], 'confidence_level': [logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))]})
             df_conf.to_csv('submission_ensemble_confidence.csv', index=False)
         else:
-            imgs_names, logits = get_logits_all_test(self.model, data_loader, device = self.device)
+            imgs_names, logits = get_logits_all_test(
+                self.model, data_loader, device=self.device)
             logits_soft = nn.Softmax(dim=1)(logits)
-            logits = torch.argmax(logits_soft, axis = 1)
-            df = pd.DataFrame({'id': imgs_names, 'Category': [classes_str[i] for i in logits.tolist()]})
+            logits = torch.argmax(logits_soft, axis=1)
+            df = pd.DataFrame({'id': imgs_names, 'Category': [
+                              classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission.csv', index=False)
 
-
-    def download(self, id, save_to = './downloaded_model.zip'):
-        file = gdown.download(id=id, output=save_to, quiet=False )
+    def download(self, id, save_to='./downloaded_model.zip'):
+        file = gdown.download(id=id, output=save_to, quiet=False)

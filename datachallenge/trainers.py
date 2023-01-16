@@ -44,7 +44,7 @@ class BaseTrainer(object):
             end = time.time()
             ##
             # torch.cuda.empty_cache()
-            ## 
+            ##
             if (i + 1) % print_freq == 0:
                 print('Epoch: [{}][{}/{}]\t'
                       'Time {:.3f} ({:.3f})\t'
@@ -66,12 +66,13 @@ class BaseTrainer(object):
 
 class Trainer(BaseTrainer):
     def _parse_data(self, inputs):
-        imgs, classes, _ = inputs # ignore img_name
-        # inputs = [Variable(imgs)] # depricated 
+        imgs, classes, _ = inputs  # ignore img_name
+        # inputs = [Variable(imgs)] # depricated
         # targets = Variable(pids.cuda())
-        inputs = imgs.to(self.device) # Input type (torch.FloatTensor) and weight type (torch.cuda.FloatTensor) should be the same or input should be a MKLDNN tensor and weight is a dense tensor
+        # Input type (torch.FloatTensor) and weight type (torch.cuda.FloatTensor) should be the same or input should be a MKLDNN tensor and weight is a dense tensor
+        inputs = imgs.to(self.device)
         targets = classes.to(self.device)
-        # inputs = imgs # if using Dataparallel, you can use this two lines without .to(device), as input can be on any device, including CPU 
+        # inputs = imgs # if using Dataparallel, you can use this two lines without .to(device), as input can be on any device, including CPU
         # targets = pids
         return inputs, targets
 
@@ -80,15 +81,16 @@ class Trainer(BaseTrainer):
 
         outputs = self.model(inputs)
         if isinstance(self.criterion, torch.nn.CrossEntropyLoss) and not self.customloss:
-            loss = self.criterion(outputs, targets) # check the loss device ??
-            prec= accuracy(outputs, targets)
+            loss = self.criterion(outputs, targets)  # check the loss device ??
+            prec = accuracy(outputs, targets)
             # prec= accuracy_micro(outputs, targets)
-            
+
             # prec = prec[0]
         else:
             if self.customloss:
-                loss = self.criterion(outputs, targets, inputs) # check the loss device ??
-                prec= accuracy(outputs, targets)
+                # check the loss device ??
+                loss = self.criterion(outputs, targets, inputs)
+                prec = accuracy(outputs, targets)
             else:
                 raise ValueError("Unsupported loss:", self.criterion)
         return loss, prec

@@ -28,9 +28,9 @@ def save_checkpoint(state, is_best, fpath='checkpoint.pth.tar'):
         state (dict): dictionary containing keys: 'state_dict': model.module.state_dict() or model.state_dict()
                                                 'epoch' : epoch_number on which model saved.
                                                 'best_top1': model score.
-                    
-        
-        
+
+
+
     'state_dict' will be used when loading from checkpoint using 'load_checkpoint' function 
     """
     mkdir_if_missing(osp.dirname(fpath))
@@ -79,4 +79,4 @@ def copy_state_dict(state_dict, model, strip=None):
     if len(missing) > 0:
         print("missing keys in state_dict:", missing)
 
-    return 
+    return

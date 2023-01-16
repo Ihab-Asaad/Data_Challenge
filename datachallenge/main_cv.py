@@ -262,11 +262,12 @@ def create_model(args, log_path=''):
     global best_top1
     start_epoch = 0
     best_top1 = 0
-    if args["training_configs"]["resume"]!='':
+    if args["training_configs"]["resume"] != '':
         print("Load from saved model...")
         # if osp.exists(args["training_configs"]["resume"]):
         if osp.exists(log_path):
-            checkpoint = load_checkpoint(osp.join(log_path, 'model_best.pth.tar'))
+            checkpoint = load_checkpoint(
+                osp.join(log_path, 'model_best.pth.tar'))
         else:
             if osp.exists(args["training_configs"]["resume"]):
                 checkpoint = load_checkpoint(
@@ -502,7 +503,8 @@ def main(args):
     #              "/content/Data_Challenge/datachallenge/logs/test_loss_2/model_best.pth.tar",
     #              "/content/Data_Challenge/datachallenge/logs/test_loss_3/model_best.pth.tar",
     #              "/content/Data_Challenge/datachallenge/logs/test_loss_4/model_best.pth.tar"]
-    paths_ids = [osp.join(path,'model_best.pth.tar') for path in path_to_models]
+    paths_ids = [osp.join(path, 'model_best.pth.tar')
+                 for path in path_to_models]
     # # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
     # # print("Validation:")
     # # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
