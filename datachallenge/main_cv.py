@@ -348,8 +348,45 @@ def main(args):
     evaluator.predict(test_submit_loader, dataset.classes_str,
                       ensemble=True, paths_ids=paths_ids)
 
+def predict(images_path):
+    seed_all(args["training_configs"]["seed"])
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    args["device"] = device
+    torch.cuda.empty_cache()
+    gc.collect()
+    if not os.path.isdir(images_path) and not os.path.isfile(images_path):
+        print(images_path, "is neither a folder nor a file.")
+        return
+    if os.path.isdir(images_path):
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif'] # '.jpg' tested
+        images = []
+        for file in os.listdir(images_path):
+            # this images_path should contain the images:
+            _, file_extension = os.path.splitext(file)
+            if file_extension in image_extensions:
+                images.append(os.path.join(images_path, file))
+        print(images)
+        
+    elif os.path.isfile(images_path):
+        print(images_path, "is a file.")
+        images = [images_path]
+    print("here")
+    test_set_submit = (images)
+    test_submit_transformer = T.Compose([T.test_tranforms(args["net"]["height"], args["net"]["width"])])
+    test_submit_loader = DataLoader(
+            Preprocessor(test_set_submit, root='',
+                    transform=test_submit_transformer),
+    batch_size=1, num_workers=1, shuffle=False, pin_memory=True)
+    evaluator = Evaluator(create_model(args), device)
+    print("here")
+    classes_str = [1, 20, 21, 22, 32, 41, 44, 45]
+    evaluator.predict(test_submit_loader, classes_str, ensemble=True,
+                        paths_ids=args['training_configs']['path_to_models'])
 
 if __name__ == '__main__':
     with open(r'./config.yaml') as file:
         args = yaml.safe_load(file)
-    main(args)
+    if args["method"]["task"] == "I&O":
+        predict(args["image_path"])
+    else:
+        main(args)

@@ -89,7 +89,6 @@ def get_logits_all_test_ensemble(model1, model2, model3, data_loader, print_freq
                   .format(i + 1, len(data_loader), batch_time.val, batch_time.avg))
         end = time.time()
         # logits_ = torch.cat([x for x in logits], dim=0)
-    print(logits)
     logits_ = torch.IntTensor(logits)
     return imgs_names, logits_
 
@@ -153,7 +152,6 @@ class Evaluator(object):
                 # model = models.create("resnet50", num_features=256,
                 #           dropout=0.2, num_classes=8).to(self.device)
                 model_configs = checkpoint['configs']
-                print(model_configs)
                 # model_configs["name"] = "efficientnet_b5"
                 # raise Exception
                 # return
@@ -216,8 +214,10 @@ class Evaluator(object):
                     else:
                         logits_final = logits_final + logits_soft
             logits_final = logits_final/(len(paths_ids)*num_pred_per_model)
+            # logits = torch.argmax(logits_final, axis=1, keepdim = True)
             logits = torch.argmax(logits_final, axis=1)
-            probs = logits_final[logits]
+            # probs = logits_final[logits]
+            # probs = logits_final[i][logits[i]].item() for i in range(len(logits.tolist()))
             df = pd.DataFrame({'id': imgs_names, 'Category': [
                               classes_str[i] for i in logits.tolist()]})
             df.to_csv('submission_ensemble.csv', index=False)
