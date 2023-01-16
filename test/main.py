@@ -1,3 +1,5 @@
+### This file has been used before main_cv.py. In order to use it, replace main_cv.py with this file
+
 from __future__ import print_function, absolute_import
 import argparse
 import os

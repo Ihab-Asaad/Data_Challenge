@@ -458,7 +458,7 @@ def main(args):
         #     for g in optimizer.param_groups:
         #         g['lr'] = lr * g.get('lr_mult', 1)
         def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
-            lr = initial_lr * (1 + math.cos(math.pi * epoch / total_epochs)) / 2
+            lr = initial_lr * (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 

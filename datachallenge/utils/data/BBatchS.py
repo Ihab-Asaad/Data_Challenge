@@ -103,12 +103,13 @@ class BalancedBatchSampler(BatchSampler):
     def __iter__(self):
         self.count = 0
         while self.count + self.batch_size <= len(self.dataset):
-            classes = np.random.choice(self.labels_set, self.n_classes, replace=False)
+            classes = np.random.choice(
+                self.labels_set, self.n_classes, replace=False)
             indices = []
             for class_ in classes:
                 indices.extend(self.label_to_indices[class_][
                                self.used_label_indices_count[class_]:self.used_label_indices_count[
-                                                                         class_] + self.n_samples])
+                                   class_] + self.n_samples])
                 self.used_label_indices_count[class_] += self.n_samples
                 if self.used_label_indices_count[class_] + self.n_samples > len(self.label_to_indices[class_]):
                     np.random.shuffle(self.label_to_indices[class_])
@@ -118,12 +119,14 @@ class BalancedBatchSampler(BatchSampler):
 
     def __len__(self):
         return len(self.dataset) // self.batch_size
-        
-if __name__=="__main__":
+
+
+if __name__ == "__main__":
     n_classes = 10
     n_samples = 2
 
-    mnist_train =  torchvision.datasets.MNIST(root="mnist/mnist_train", train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),]))
+    mnist_train = torchvision.datasets.MNIST(
+        root="mnist/mnist_train", train=True, download=True, transform=transforms.Compose([transforms.ToTensor(),]))
 
     # balanced_batch_sampler = BalancedBatchSampler(mnist_train, n_classes, n_samples)
     loader = DataLoader(mnist_train)
@@ -133,9 +136,11 @@ if __name__=="__main__":
     labels = torch.LongTensor(labels_list)
     print(labels.shape)
     print("here1")
-    balanced_batch_sampler = samplers.MPerClassSampler(labels,2 , length_before_new_iter = len(labels))
+    balanced_batch_sampler = samplers.MPerClassSampler(
+        labels, 2, length_before_new_iter=len(labels))
     print("here2")
-    dataloader = torch.utils.data.DataLoader(mnist_train, sampler=balanced_batch_sampler, batch_size = 30)
+    dataloader = torch.utils.data.DataLoader(
+        mnist_train, sampler=balanced_batch_sampler, batch_size=30)
     my_testiter = iter(dataloader)
     # print(type(my_testiter))
     print(type(dataloader))
@@ -145,7 +150,7 @@ if __name__=="__main__":
     # images,target = next(my_testiter)
     # print(target)
     j = 0
-    labels_list=[]
+    labels_list = []
     for _, label in dataloader:
         j = j+1
         labels_list.extend(label.tolist())
