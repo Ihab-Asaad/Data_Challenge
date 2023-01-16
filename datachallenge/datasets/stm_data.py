@@ -14,9 +14,6 @@ from collections import Counter
 
 user_name = 'ihabasaad'
 key = ''
-# if user_name == '':
-#     raise KeyError("enter you kaggle account first")
-
 os.environ["KAGGLE_USERNAME"] = user_name
 os.environ["KAGGLE_KEY"] = key
 from kaggle.api.kaggle_api_extended import KaggleApi

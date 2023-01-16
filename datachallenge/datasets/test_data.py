@@ -10,13 +10,15 @@ key = '7e284af09589e68770a3d479ef215d07'
 if user_name == '':
     raise KeyError("enter you kaggle account first")
 
+user_name = 'ihabasaad'
+key = ''
 os.environ["KAGGLE_USERNAME"] = user_name
 os.environ["KAGGLE_KEY"] = key
-
 from kaggle.api.kaggle_api_extended import KaggleApi
 
+
 class TEST_SUBMIT():
-    def __init__(self, extract_to=None, download_to=None, google_id=None, download=True):
+    def __init__(self, extract_to=None, download_to=None, google_id=None, download=True, user_name = '', key = ''):
         # if google_id == None:
         #     google_id = "1H5sMjtAT_AEmjoOaElGHDN8G_v6PFcfU"
         self.id = google_id
