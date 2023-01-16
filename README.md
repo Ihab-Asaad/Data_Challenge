@@ -23,6 +23,8 @@ pip install -e .
 # System Specification
 Ubuntu 18.04.6. For Windows users, you have to change '/' with '\\' in evaluator.py and in .yaml file.
 
+Python version: 3.8.16
+
 In case you don't have a GPU, just change:
 ```shell
 checkpoint = torch.load(fpath)

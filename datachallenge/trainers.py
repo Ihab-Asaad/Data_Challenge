@@ -6,6 +6,7 @@ from torch.autograd import Variable
 
 from datachallenge.evaluation_metrics import accuracy
 from datachallenge.utils.meters import AverageMeter
+from torch.utils.tensorboard import SummaryWriter
 
 
 class BaseTrainer(object):
@@ -25,12 +26,15 @@ class BaseTrainer(object):
         precisions = AverageMeter()
 
         end = time.time()
+        # writer = SummaryWriter(log_dir='./')
         for i, inputs in enumerate(data_loader):
             data_time.update(time.time() - end)
 
             inputs, targets = self._parse_data(inputs)
             # x = inputs.to(device)
             # y = targets.to(device)
+            # writer.add_image('Input Images', inputs[1,:,:,:], i)
+            # writer.close()
             loss, prec1 = self._forward(inputs, targets)
 
             losses.update(loss.data.item(), targets.size(0))
@@ -56,7 +60,7 @@ class BaseTrainer(object):
                               data_time.val, data_time.avg,
                               losses.val, losses.avg,
                               precisions.val, precisions.avg))
-
+        # writer.close()
     def _parse_data(self, inputs):
         raise NotImplementedError
 

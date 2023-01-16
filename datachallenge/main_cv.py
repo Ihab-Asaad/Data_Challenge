@@ -11,6 +11,7 @@ from torch import nn
 from torch.backends import cudnn
 from torch.utils.data import DataLoader, WeightedRandomSampler
 import gc
+import math
 
 from datachallenge import datasets
 from datachallenge import models
@@ -451,16 +452,20 @@ def main(args):
         # print lr with metrics:
         # Schedule learning rate, see automation functions in torch, see also:
         # https://www.kaggle.com/code/isbhargav/guide-to-pytorch-learning-rate-scheduling/notebook
-        def adjust_lr(epoch):
-            step_size = 60 if args["net"]["arch"] == 'inception' else 40
-            lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
+        # def adjust_lr(epoch):
+        #     step_size = 40
+        #     lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
+        #     for g in optimizer.param_groups:
+        #         g['lr'] = lr * g.get('lr_mult', 1)
+        def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
+            lr = initial_lr * (1 + math.cos(math.pi * epoch / total_epochs)) / 2
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
         # Start training
-
+        
         for epoch in range(start_epoch, args["training"]["epochs"]):
-            adjust_lr(epoch)
+            adjust_lr(optimizer, epoch, args["training"]["epochs"], args["training"]["lr"])
             trainer.train(epoch, train_loader, optimizer)
             # trainer.train(epoch, alldata_loader, optimizer)
             if epoch < args["training_configs"]["start_save"]:
@@ -483,26 +488,6 @@ def main(args):
             print('\n * Finished epoch {:3d}  top1: {:5.1%}  best: {:5.1%}{}\n'.
                   format(epoch, top1, best_top1, ' *' if is_best else ''))
 
-    # path_to_models = ['1Qajyh0DLb4PlEQ2W5H29LiSoyRPeR8CL&confirm=t', \
-    #             '1zbRMjmk7I0V4Wupla7g3d-eVxbXRg4LA&confirm=t', \
-    #             '1Au0w6ZxY-0BRN631vZFtmWya6UzDiaUy&confirm=t', \
-    #             '1iT-2TdDQYDbka9lf6-S40oNxVSm-Co-O&confirm=t', \
-    #             '1YgOZ_fQsGFqLHqBZwYq_6lzimqvynZsP&confirm=t', \
-    #             "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
-    #             "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
-    #             "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
-    #             "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
-    #             "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    # paths_ids = ["1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t", \
-    #             "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t", \
-    #             "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t", \
-    #             "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t", \
-    #             "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
-    # paths_ids = ["/content/Data_Challenge/datachallenge/logs/test_loss_0/model_best.pth.tar",
-    #              "/content/Data_Challenge/datachallenge/logs/test_loss_1/model_best.pth.tar",
-    #              "/content/Data_Challenge/datachallenge/logs/test_loss_2/model_best.pth.tar",
-    #              "/content/Data_Challenge/datachallenge/logs/test_loss_3/model_best.pth.tar",
-    #              "/content/Data_Challenge/datachallenge/logs/test_loss_4/model_best.pth.tar"]
     paths_ids = [osp.join(path, 'model_best.pth.tar')
                  for path in path_to_models]
     # # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
@@ -538,6 +523,7 @@ if __name__ == '__main__':
         # scalar values to Python the dictionary format
         args = yaml.safe_load(file)
     # print(type(args['training_configs']['path_to_models'][0]))
+    
     main(args)
 
     # check:
