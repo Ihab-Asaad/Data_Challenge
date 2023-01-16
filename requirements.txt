@@ -14,3 +14,4 @@ pytorch-metric-learning==1.6.3
 vit-pytorch==0.40.2
 pytorch_pretrained_vit 
 torchviz==0.0.2
+tensorboard==2.9.1
