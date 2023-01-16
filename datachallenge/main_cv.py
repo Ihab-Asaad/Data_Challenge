@@ -273,8 +273,8 @@ def main(args):
         evaluator = Evaluator(model, device)
 
         # Criterion: pass weights to loss function:
-        repeat = dataset.weights_trainval if args["training_configs"][
-            "combine_trainval"] else dataset.weights_train
+        # repeat = dataset.weights_trainval if args["training_configs"][
+        #     "combine_trainval"] else dataset.weights_train
 
         # torch_repeat = torch.Tensor(repeat)
         # class_weights = sum(torch_repeat)/torch_repeat
@@ -290,7 +290,8 @@ def main(args):
             new_params = [p for p in model.parameters() if
                           id(p) not in base_param_ids]
             param_groups = [
-                {'params': model.base.parameters(), 'lr_mult': 0.1},
+                # {'params': model.base.parameters(), 'lr_mult': 0.1},
+                {'params': model.base.parameters(), 'lr_mult': 1},
                 {'params': new_params, 'lr_mult': 1}]
         else:
             param_groups = model.parameters()
@@ -298,8 +299,6 @@ def main(args):
                                     momentum=args["training"]["momentum"],
                                     weight_decay=args["training"]["weight_decay"],
                                     nesterov=True)
-        # optimizer = torch.optim.Adam(param_groups, lr=args["training"]["lr"],
-        #                             weight_decay=args["training"]["weight_decay"])
 
         # Trainer
         trainer = Trainer(model, criterion, device, custom_loss)
@@ -307,6 +306,7 @@ def main(args):
         def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
             lr = initial_lr * \
                 (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
+            print(lr)
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
@@ -315,7 +315,6 @@ def main(args):
             adjust_lr(optimizer, epoch,
                       args["training"]["epochs"], args["training"]["lr"])
             trainer.train(epoch, train_loader, optimizer)
-            # trainer.train(epoch, alldata_loader, optimizer)
             if epoch < args["training_configs"]["start_save"]:
                 continue
             metrics_ = evaluator.evaluate(val_loader)

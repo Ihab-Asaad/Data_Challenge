@@ -6,9 +6,6 @@ from .test_data import TEST_SUBMIT
 
 __factory = {
     'stm_data': STM_DATA,
-    # 'ex1_data': EX1_DATA, # add external data to train supervised/unsupervised models
-    # 'ex2_data': EX2_DATA,
-    # 'ex3_data': EX3_DATA,
     'test_data': TEST_SUBMIT,
 }
 
@@ -40,5 +37,5 @@ def create(name, extract_to, *args, **kwargs):
     """
     if name not in __factory:
         raise KeyError("Unknown dataset:", name)
-    print(args,kwargs)
+    print(args, kwargs)
     return __factory[name](extract_to, *args, **kwargs)
