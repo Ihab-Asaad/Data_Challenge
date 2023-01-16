@@ -21,16 +21,11 @@ from datachallenge.utils.data import transformers as T
 from datachallenge.utils.data.preprocessor import Preprocessor
 from datachallenge.utils.logging import Logger
 from datachallenge.utils.serialization import load_checkpoint, save_checkpoint
-from pytorch_metric_learning import samplers
 from datachallenge.loss.loss_fn import CustomCrossEntropyLoss
-import gdown
-from torchviz import make_dot
-from sklearn.model_selection import KFold, StratifiedKFold
-from visualize import visualize
+from sklearn.model_selection import StratifiedKFold
 
 
-def get_data(name, cross_val, num_folds, val_split, test_split, data_dir, combine_trainval):
-
+def get_data(name, val_split, test_split, data_dir):
     extract_to = osp.join(data_dir, name)
     # pass the random state number to split the data for two models in different ways , or apply CV
     # create dataset:
@@ -38,18 +33,11 @@ def get_data(name, cross_val, num_folds, val_split, test_split, data_dir, combin
         name, extract_to, val_split=val_split, test_split=test_split, download=True)
 
     # create test dataset, this is the unlabeled data to be submitted:
-    # dataset_test = datasets.create('test_data', osp.join(data_dir, 'test_data_submit'), download = True)
     dataset_test = datasets.create('test_data', extract_to, download=True)
-
     return dataset, dataset_test, dataset.num_classes
 
 
 def dataset_dataloader(dataset, dataset_test, height, width, batch_size, workers, combine_trainval):
-    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
-    normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-
-    # get the data portions, to pass them later to datalaoders:
     print("combine_trainval: ", combine_trainval)
     train_set = (dataset.X_trainval, dataset.y_trainval) if combine_trainval else (
         dataset.X_train, dataset.y_train)
@@ -57,63 +45,23 @@ def dataset_dataloader(dataset, dataset_test, height, width, batch_size, workers
     test_set = (dataset.X_test, dataset.y_test)
     test_set_submit = (dataset_test.X)
     all_dataset = (dataset.X, dataset.y)
-    # num_classes = dataset.num_classes
 
     # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
-        T.train_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
-        # T.RandomSizedRectCrop(height, width),
-        # T.RandomHorizontalFlip(),
-        # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
-        # T.ToTensor(),
-    ])
+        T.train_tranforms(height, width)])
 
     test_transformer = T.Compose([
-        T.test_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
-    ])
+        T.test_tranforms(height, width)])
 
     test_submit_transformer = T.Compose([
-        T.test_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
-    ])
+        T.test_tranforms(height, width)])
 
-    # https://pytorch.org/docs/master/data.html#torch.utils.data.sampler.WeightedRandomSampler
-    # https://stackoverflow.com/questions/67535660/how-to-construct-batch-that-return-equal-number-of-images-for-per-classes
-
-    # https://discuss.pytorch.org/t/load-the-same-number-of-data-per-class/65198/3
-    # train_loader = DataLoader(
-    #     # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
-    #     Preprocessor(train_set, root=dataset.images_dir,
-    #                  transform=train_transformer),
-    #     batch_size=batch_size, num_workers=workers,
-    #     shuffle=True,
-    #     pin_memory=True, # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
-    #     drop_last=True)
-    loader = DataLoader(Preprocessor(
-        train_set, root=dataset.images_dir, transform=train_transformer))
-    labels_list = []
-    for _, label, _ in loader:  # return img, target, image_path
-        labels_list.append(label)
-    labels = torch.LongTensor(labels_list)
-    # balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
-    # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=dataset.images_dir,
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
-        # shuffle=True,
         shuffle=True,
-        # sampler=balanced_sampler,
-        # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         pin_memory=True,
         drop_last=True)
 
@@ -144,24 +92,15 @@ def dataset_dataloader(dataset, dataset_test, height, width, batch_size, workers
 
 
 def test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir, images_dir_test, height, width, batch_size, workers):
-    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
-    normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
     test_set = (X_test, y_test)
     test_set_submit = (X_test_submit)
 
     test_transformer = T.Compose([
         T.test_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
     ])
 
     test_submit_transformer = T.Compose([
         T.test_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
     ])
 
     test_loader = DataLoader(
@@ -178,56 +117,22 @@ def test_test_submit_dataloader(X_test, y_test, X_test_submit, images_dir, image
 
 
 def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, width, batch_size, workers):
-    # All pretrained torchvision models have the same preprocessing, which is to normalize as following (input is RGB format):
-    normalizer = T.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-    # get the data portions, to pass them later to datalaoders:
     train_set = (X_train, y_train)
     val_set = (X_val, y_val)
 
-    # define some transformers before passing the image to our model:
     train_transformer = T.Compose([
         T.train_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
-        # T.RandomSizedRectCrop(height, width),
-        # T.RandomHorizontalFlip(),
-        # convert PIL(RGB) or numpy(type: unit8) in range [0,255] to torch tensor a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
-        # T.ToTensor(),
     ])
 
     test_transformer = T.Compose([
-        T.test_tranforms(height, width),
-        # T.RectScale(height, width),
-        # T.ToTensor(),
-        # normalizer,
-    ])
-    print(train_set[0][0])
-    loader_weights = DataLoader(
-        Preprocessor(train_set, root=images_dir, transform=train_transformer),
-        batch_size=batch_size, num_workers=workers, shuffle=False)
+        T.test_tranforms(height, width)])
 
-    # imgs_weights_dict = visualize()
-    # labels_list, imgs_weights = [],[]
-    # for ii, (imgs, classes, imgs_names_batch) in enumerate(loader_weights):
-    #     labels_list.extend(classes)
-    #     imgs_weights.extend([imgs_weights_dict[path_img] for path_img in imgs_names_batch])
-    # labels = torch.LongTensor(labels_list)
-    # print(len(imgs_weights))
-    # balanced_sampler = samplers.MPerClassSampler(labels, 2, length_before_new_iter = 2*len(labels)) # does this requires deleting weights?, count the number of images in an epoch, check if the same number of the dataset
-    # sample from distribution of weights: sampler = WeightedRandomSampler(weights  = sample_weights, num_samples = len(labels), replacement = True)
-    # sampler = WeightedRandomSampler(weights  = imgs_weights, num_samples = 3*len(labels), replacement = True)
     train_loader = DataLoader(
         # Preprocessor is the main class, pass dataset with path to images and transformer, override len , getitem
         Preprocessor(train_set, root=images_dir,
                      transform=train_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=True,
-        # shuffle = True,
-        # sampler=balanced_sampler,
-        # sampler = sampler,
-        # avoid one implicit CPU-to-CPU copy, from paged CPU memory to non-paged CPU memory, which is required before copy tensor to cuda using x.cuda().
         pin_memory=True,
         drop_last=True)
 
@@ -236,7 +141,6 @@ def train_val_dataloader(X_train, y_train, X_val, y_val, images_dir, height, wid
                      transform=test_transformer),
         batch_size=batch_size, num_workers=workers,
         shuffle=False, pin_memory=True)
-    print(len(val_set[0]))
 
     return train_loader, val_loader
 
@@ -257,8 +161,6 @@ best_top1 = 0
 
 
 def create_model(args, log_path=''):
-    # Load from checkpoint:
-    # print learning rate while training to check if resuming take the currect lr
     global start_epoch
     global best_top1
     start_epoch = 0
@@ -273,34 +175,17 @@ def create_model(args, log_path=''):
             if osp.exists(args["training_configs"]["resume"]):
                 checkpoint = load_checkpoint(
                     osp.join(args["training_configs"]["resume"], 'model_best.pth.tar'))
-        # else:
-        # # download from google drive:
-        # #
-        #     file = gdown.download(id=args["training_configs"]["resume"], output='/content/Data_Challenge/datachallenge/downloaded_model.tar', quiet=False )
-        #     checkpoint = load_checkpoint('/content/Data_Challenge/datachallenge/downloaded_model.tar')
-        # model = models.create("resnet50", num_features=256,
-        #           dropout=0.2, num_classes=8).to(self.device)
         model_configs = checkpoint['configs']
         model = models.create(**model_configs).to(args["device"])
-        # model = self.model
         model.load_state_dict(checkpoint['state_dict'])
-        # checkpoint = load_checkpoint(args["training_configs"]["resume"])
-        # model_configs = checkpoint['configs']
-        # model = models.create(**model_configs).to(device)
-        # model.load_state_dict(checkpoint['state_dict'])
-        # print("Device: ",device)
-        # model = checkpoint['model'].to(device) # is to(device necessary)
-        # model.load_state_dict(checkpoint['model'])
         start_epoch = checkpoint['epoch']
         best_top1 = checkpoint['best_top1']
         print("=> Start epoch {}  best top1 {:.1%}"
               .format(start_epoch, best_top1))
-    # model = nn.DataParallel(model).cuda() # this add attribute 'module' to model
     else:
-        # Create model
+        # Create new model
         model = models.create(args["net"]["arch"], num_features=args["training"]["features"],
                               dropout=args["training"]["dropout"], num_classes=args["num_classes"]).to(args["device"])  # no need to use .to(device) as below we are using DataParallel
-
     return model
 
 
@@ -324,45 +209,36 @@ def main(args):
         height, width = (224, 224)
 
     dataset, dataset_test, num_classes = \
-        get_data(args["dataset"]["name"], args["training_configs"]["cv"], args["training_configs"]["folds"], args["training_configs"]["val_split"],
-                 args["training_configs"]["test_split"], args["logging"]["data_dir"], args["training_configs"]["combine_trainval"])
+        get_data(args["dataset"]["name"], args["training_configs"]["val_split"],
+                 args["training_configs"]["test_split"], args["logging"]["data_dir"])
     args["num_classes"] = dataset.num_classes
     args["device"] = device
     # add ensemble to .yaml file
     evaluator = Evaluator(create_model(args), device)
     train_loader, val_loader, test_loader, test_submit_loader, alldata_loader = dataset_dataloader(
         dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
-    ensemble = True  # for sure
-    paths = []
+
     if args["training_configs"]["predict"]:
         print("Prediction:")
-        # you have to test the accuracy of ensemble on training dataloader before submission.
-        models_names = ['resnet50']
-        # for model_name in models_names:
-        # pass the paths of the trained models first, otherwise download from google:
         evaluator.predict(test_submit_loader, dataset.classes_str, ensemble=True,
                           paths_ids=args['training_configs']['path_to_models'])
         return
     if args["training_configs"]["evaluate"]:
-        # metric.train(model, train_loader)
         paths_ids = args['training_configs']['path_to_models']
-        print(paths_ids)
+
+        # uncomment the following to check the accuarcy on val/test/training sets
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
         print("Test:")
         evaluator.evaluate(test_loader, ensemble=True, paths_ids=paths_ids)
-        # print("Train:") #
+        # print("Train:")
         # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
-
-        # # make a folder for misclassified images:
         return
 
     if args["training_configs"]["cv"]:
-        # kf = KFold(n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
         kf = StratifiedKFold(
             n_splits=args["training_configs"]["folds"], random_state=42, shuffle=True)
     else:
-        # kf = KFold(n_splits=10, random_state=42, shuffle=True) # and break after the first fold
         kf = StratifiedKFold(n_splits=3)
 
     test_loader, test_submit_loader = test_test_submit_dataloader(
@@ -381,7 +257,6 @@ def main(args):
         train_loader, val_loader = train_val_dataloader(X_train_fold, y_train_fold, X_val_fold, y_val_fold,
                                                         dataset.images_dir, height, width, args["training"]["batch_size"], args["training"]["workers"])
 
-        # train_loader, val_loader, test_loader, test_submit_loader = dataset_dataloader(dataset, dataset_test, height, width, args["training"]["batch_size"], args["training"]["workers"], args["training_configs"]["combine_trainval"])
         log_path = args["logging"]["logs_dir"] + "_" + str(i)
         path_to_models.append(log_path)
 
@@ -393,10 +268,6 @@ def main(args):
                                    for p in model.parameters() if p.requires_grad)
         print("Total parameters: ", total_parameters,
               "Trainable parameters: ", trainable_parameters)
-        # print(model)
-
-        # Distance metric, will be added later
-        # metric = DistanceMetric(algorithm=args["metric_learning"]["dist_metric"], device = device)
 
         # Evaluator
         evaluator = Evaluator(model, device)
@@ -405,29 +276,13 @@ def main(args):
         repeat = dataset.weights_trainval if args["training_configs"][
             "combine_trainval"] else dataset.weights_train
 
-        torch_repeat = torch.Tensor(repeat)
-        class_weights = sum(torch_repeat)/torch_repeat
-        # criterion = nn.CrossEntropyLoss(weight=class_weights).cuda()
+        # torch_repeat = torch.Tensor(repeat)
+        # class_weights = sum(torch_repeat)/torch_repeat
         custom_loss = False  # make it in .yaml
         if custom_loss:
             criterion = CustomCrossEntropyLoss(device=device).cuda()
         else:
             criterion = nn.CrossEntropyLoss().cuda()
-
-        # Optimizer
-        # if hasattr(model.module, 'base'):
-        #     base_param_ids = set(map(id, model.module.base.parameters()))
-        #     new_params = [p for p in model.parameters() if
-        #                   id(p) not in base_param_ids]
-        #     param_groups = [
-        #         {'params': model.module.base.parameters(), 'lr_mult': 0.1},
-        #         {'params': new_params, 'lr_mult': 1.0}]
-        # else:
-        #     param_groups = model.parameters()
-        # optimizer = torch.optim.SGD(param_groups, lr=args["training"]["lr"],
-        #                             momentum=args["training"]["momentum"],
-        #                             weight_decay=args["training"]["weight_decay"],
-        #                             nesterov=True)
 
         # in case you are using a pretrained model, train its weights with lower lr to not destroy the prelearned features.
         if hasattr(model, 'base'):
@@ -449,23 +304,16 @@ def main(args):
         # Trainer
         trainer = Trainer(model, criterion, device, custom_loss)
 
-        # print lr with metrics:
-        # Schedule learning rate, see automation functions in torch, see also:
-        # https://www.kaggle.com/code/isbhargav/guide-to-pytorch-learning-rate-scheduling/notebook
-        # def adjust_lr(epoch):
-        #     step_size = 40
-        #     lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
-        #     for g in optimizer.param_groups:
-        #         g['lr'] = lr * g.get('lr_mult', 1)
         def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
-            lr = initial_lr * (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
+            lr = initial_lr * \
+                (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
         # Start training
-        
         for epoch in range(start_epoch, args["training"]["epochs"]):
-            adjust_lr(optimizer, epoch, args["training"]["epochs"], args["training"]["lr"])
+            adjust_lr(optimizer, epoch,
+                      args["training"]["epochs"], args["training"]["lr"])
             trainer.train(epoch, train_loader, optimizer)
             # trainer.train(epoch, alldata_loader, optimizer)
             if epoch < args["training_configs"]["start_save"]:
@@ -477,9 +325,7 @@ def main(args):
 
             configs = models.get_configs(args, num_classes)
             save_checkpoint({
-                # 'state_dict': model.module.state_dict(),
                 'state_dict': model.state_dict(),
-                # 'model': model,
                 'epoch': epoch + 1,
                 'best_top1': best_top1,
                 'configs': configs,
@@ -490,13 +336,6 @@ def main(args):
 
     paths_ids = [osp.join(path, 'model_best.pth.tar')
                  for path in path_to_models]
-    # # paths_ids = [osp.join(path,'checkpoint.pth.tar') for path in path_to_models]
-    # # print("Validation:")
-    # # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
-    # # print("Test:")
-    # # evaluator.evaluate(test_loader, ensemble = True, paths_ids = paths_ids)
-    # # print("Train:") #
-    # # evaluator.evaluate(train_loader, ensemble = True, paths_ids = paths_ids)
 
     print("All data:")
     evaluator.evaluate(alldata_loader, ensemble=True, paths_ids=paths_ids)
@@ -505,27 +344,8 @@ def main(args):
     evaluator.predict(test_submit_loader, dataset.classes_str,
                       ensemble=True, paths_ids=paths_ids)
 
-    # # Final test
-    # print('Test with best model:')
-    # checkpoint = load_checkpoint(osp.join(args["logging"]["logs_dir"], 'model_best.pth.tar'))
-    # # model.module.load_state_dict(checkpoint['state_dict'])
-    # model.load_state_dict(checkpoint['state_dict'])
-    # # model = torch.load(checkpoint['model'])
-    # # metric.train(model, train_loader)
-    # evaluator.evaluate(test_loader)
-
-    # # Predict on external test set:
-
 
 if __name__ == '__main__':
     with open(r'/content/Data_Challenge/datachallenge/config.yaml') as file:
-        # The FullLoader parameter handles the conversion from YAML
-        # scalar values to Python the dictionary format
         args = yaml.safe_load(file)
-    # print(type(args['training_configs']['path_to_models'][0]))
-    
     main(args)
-
-    # check:
-    # https://stackoverflow.com/questions/55563376/pytorch-how-does-pin-memory-work-in-dataloader
-    # torch.no_grad()(then no need .detach() , or for example var.detach().cpu().numpy()) with model.eval() : https://stackoverflow.com/questions/55322434/how-to-clear-cuda-memory-in-pytorch
