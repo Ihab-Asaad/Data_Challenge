@@ -350,6 +350,6 @@ def main(args):
 
 
 if __name__ == '__main__':
-    with open(r'/content/Data_Challenge/datachallenge/config.yaml') as file:
+    with open(r'./config.yaml') as file:
         args = yaml.safe_load(file)
     main(args)
