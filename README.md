@@ -25,23 +25,6 @@ Ubuntu 18.04.6. For Windows users, you have to change '/' with '\\' in evaluator
 
 Python version: 3.8.16
 
-In case you don't have a GPU, just change:
-```shell
-checkpoint = torch.load(fpath)
-```
-to 
-```shell
-checkpoint = torch.load(fpath, map_location=torch.device('cpu'))
-```
-You may need also to change:
-```shell
- loss = self.criterion(outputs, targets) 
-```
-to
- ```shell
- loss = self.criterion(outputs, targets.type(torch.LongTensor)) 
-```
-
 # Predicting
 
 To predict the class of an image (or a folder of images), you have to set task: 'I&O' in config.yaml file and set the path to the images image_path: 'path to your images'. 
