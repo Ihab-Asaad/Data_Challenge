@@ -36,6 +36,8 @@ The output will be in a .csv file containing the images' names along with the pr
 
 The dataset is on Kaggle platform, so first you have to put your user name and key (you can generate them from setting from your Kaggle account) in .yaml file (fields : user_name, key).
 
+First, Set set task: 'T&E' in config.yaml 
+
 To evaluate on the dataset (or a portion of it), you have to change the 'evaluate' key in .yaml file to True (review the main_cv.py to check how the evaluation is done when we don't train our models)
 
 To predict on the dataset from kaggle, you have to change the 'predict' key in .yaml file to True will making 'evaluate' False.
