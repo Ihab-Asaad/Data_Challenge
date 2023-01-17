@@ -52,7 +52,16 @@ training_configs:
     resume : '' # put your model path here to start training from it.
     evaluate : False # by default False (training mode), if True, evaluation only, and the path to model will be from 'resume' variable
     predict: False
-    path_to_models: ["1Qajyh0DLb4PlEQ2W5H29LiSoyRPeR8CL&confirm=t"]
+    path_to_models: ["1Qajyh0DLb4PlEQ2W5H29LiSoyRPeR8CL&confirm=t",
+                "1zbRMjmk7I0V4Wupla7g3d-eVxbXRg4LA&confirm=t",
+                "1Au0w6ZxY-0BRN631vZFtmWya6UzDiaUy&confirm=t",
+                "1iT-2TdDQYDbka9lf6-S40oNxVSm-Co-O&confirm=t",
+                "1YgOZ_fQsGFqLHqBZwYq_6lzimqvynZsP&confirm=t",
+                "1y3_QidklP12vYe1C3Sdl1RrS0DNDRN0Q&confirm=t",
+                "1wuBa5R5DiPCo-96-euXQlckuKgFE9gln&confirm=t",
+                "1aUMvJKEfya-u1ihM0FjIVIMqPGilHNJq&confirm=t",
+                "1QdtciWd4VHyKYb9g30O-HayTvYDmbffO&confirm=t",
+                "1zF8f-0G1O98YVP5CaHx-SsphNKEJJDyg&confirm=t"]
     start_save: 0 # start saving checkpoints after specific epoch
     seed: 1
     print_freq: 1 # print to stdout each print_freq epochs
