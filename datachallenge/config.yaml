@@ -1,11 +1,13 @@
 # logger options
 description: "Softmax loss classification"
 # dataset options
+
+task: 'I&O' # 'T&E' 
+# if 'I&O' is chosen, the code will print the label with confidence of this image
+# if 'T&E' then you can use the configs down with training and evaluation process.
+
 method:
     type: 'deep_learning' 
-    task: 'I&O' # 'T&E' 
-    # if 'I&O' is chosen, the code will print the label with confidence of this image
-    # if 'T&E' then you can use the configs down with training and evaluation process.
 
 # I&O: provide an image or a folder of images in image_path, the models used are defined in path_to_models:
 image_path: './datasets/dataset/stm_data/test_new'
@@ -24,8 +26,8 @@ net:
     # 'cusnet'
     # 'vit' vision transformers:
     # Check the data images sizes ??? important
-    height : 224 # 256 
-    width :  224 # 128 
+    height : 299 # 224 # 256 
+    width :  299 # 224 # 128 
 
 # training
 training:

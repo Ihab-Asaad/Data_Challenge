@@ -383,7 +383,7 @@ def predict(images_path):
 if __name__ == '__main__':
     with open(r'./config.yaml') as file:
         args = yaml.safe_load(file)
-    if args["method"]["task"] == "I&O":
+    if args["task"] == "I&O":
         predict(args["image_path"])
     else:
         main(args)

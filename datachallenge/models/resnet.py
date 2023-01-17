@@ -16,7 +16,7 @@ class ResNet(nn.Module):
         34: torchvision.models.resnet34,
         50: torchvision.models.resnet50,
         101: torchvision.models.resnet101,
-        152: torchvision.models.resnet152,
+        152: torchvision.models.resnet152, # add renext50
     }
 
     def __init__(self, depth, pretrained= True, cut_at_pooling=False,
