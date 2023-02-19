@@ -2,7 +2,7 @@
 description: "Softmax loss classification"
 # dataset options
 
-task: 'I&O' # 'T&E' 
+task: 'T&E' # 'T&E' 
 # if 'I&O' is chosen, the code will print the label with confidence of this image
 # if 'T&E' then you can use the configs down with training and evaluation process.
 
@@ -17,7 +17,7 @@ dataset:
     name : 'stm_data' # 
     extract_to: ''
     user_name: 'ihabasaad'
-    key: '7e284af09589e68770a3d479ef215d07'
+    key: '3db5147e652da8d638a22f3ceda90752'
 
 net: 
     arch : 'resnet50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
