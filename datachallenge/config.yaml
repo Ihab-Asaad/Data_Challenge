@@ -20,7 +20,7 @@ dataset:
     key: '3db5147e652da8d638a22f3ceda90752'
 
 net: 
-    arch : 'resnet50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
+    arch : 'resnext50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
     # 'inception': from scratch, not added yet
     # 'efficientnet', 'efficientnet_b0','efficientnet_b1','efficientnet_b2','efficientnet_b3','efficientnet_b4','efficientnet_b5','efficientnet_b6','efficientnet_b7'
     # 'cusnet'
@@ -31,12 +31,12 @@ net:
 
 # training
 training:
-    epochs : 50
+    epochs : 15
     batch_size: 16 # 
     workers : 2 # 
     features: 256 # 
     dropout: 0.3
-    lr: 0.001 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
+    lr: 0.01 # learning rate of new parameters, for pretrained, parameters it is 10 times smaller than this
     momentum: 0.9
     weight_decay: 0.0005
     opt: SGD # not added yet

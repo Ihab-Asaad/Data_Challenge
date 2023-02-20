@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from datachallenge.models.inception import *
 from datachallenge.models.resnet import *
+from datachallenge.models.resnext import *
 from datachallenge.models.efficient import *
 from datachallenge.models.cusnet import CusNet
 from datachallenge.models.vit import *
@@ -14,6 +15,7 @@ __factory = {
     'resnet50': resnet50,
     'resnet101': resnet101,
     'resnet152': resnet152,
+    'resnext50': resnext50,
     'efficientnet': efficientnet,
     'efficientnet_b0': efficientnet_b0,
     'efficientnet_b1': efficientnet_b1,

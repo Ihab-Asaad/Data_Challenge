@@ -294,8 +294,8 @@ def main(args):
             new_params = [p for p in model.parameters() if
                           id(p) not in base_param_ids]
             param_groups = [
-                # {'params': model.base.parameters(), 'lr_mult': 0.1},
-                {'params': model.base.parameters(), 'lr_mult': 1},
+                {'params': model.base.parameters(), 'lr_mult': 0.1},
+                # {'params': model.base.parameters(), 'lr_mult': 1},
                 {'params': new_params, 'lr_mult': 1}]
         else:
             param_groups = model.parameters()
@@ -307,9 +307,16 @@ def main(args):
         # Trainer
         trainer = Trainer(model, criterion, device, custom_loss)
 
+        # def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
+        #     lr = initial_lr * \
+        #         (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
+        #     for g in optimizer.param_groups:
+        #         g['lr'] = lr * g.get('lr_mult', 1)
+
         def adjust_lr(optimizer, epoch, total_epochs, initial_lr):
-            lr = initial_lr * \
-                (1 + math.cos(math.pi * 3*epoch / total_epochs)) / 2
+            # step_size = 60 if args["net"]["arch"] == 'inception' else 40
+            step_size = total_epochs
+            lr = args["training"]["lr"] * (0.1 ** (epoch // step_size))
             for g in optimizer.param_groups:
                 g['lr'] = lr * g.get('lr_mult', 1)
 
