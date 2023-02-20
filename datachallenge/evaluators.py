@@ -185,7 +185,7 @@ class Evaluator(object):
         print("Confusion_matrix: \n", confusion_matrix)
         return acc_, prec_, rec_, f1_, top2acc_, confusion_matrix
 
-    def predict(self, data_loader, classes_str, ensemble=False, paths_ids=[], num_pred_per_model=5):
+    def predict(self, data_loader, classes_str, ensemble=False, paths_ids=[], num_pred_per_model=1):
         if ensemble:
             got_first = False
             for idx, path in enumerate(paths_ids):

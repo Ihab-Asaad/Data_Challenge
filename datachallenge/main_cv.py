@@ -229,7 +229,6 @@ def main(args):
         return
     if args["training_configs"]["evaluate"]:
         paths_ids = args['training_configs']['path_to_models']
-
         # uncomment the following to check the accuarcy on val/test/training sets
         # print("Validation:")
         # evaluator.evaluate(val_loader, ensemble = True, paths_ids = paths_ids)
