@@ -328,7 +328,7 @@ def main(args):
             if epoch < args["training_configs"]["start_save"]:
                 continue
             metrics_ = evaluator.evaluate(val_loader)
-            top1 = metrics_[1]  # acc macro
+            top1 = metrics_[0]  # acc macro
             is_best = top1 > best_top1
             best_top1 = max(top1, best_top1)
 
