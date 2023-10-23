@@ -17,7 +17,7 @@ dataset:
     name : 'stm_data' # 
     extract_to: ''
     user_name: 'ihabasaad'
-    key: '3db5147e652da8d638a22f3ceda90752'
+    key: 'put your key here'
 
 net: 
     arch : 'resnext50' # 'resnet50' # 'resnet18', 'resnet34', 'resnet50', 'resnet1001', 'resnet101','resnet152': download pretrained weights
